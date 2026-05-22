@@ -148,7 +148,7 @@ export function useGameEngine(opts: GameEngineOptions): UseGameEngine {
     timers.current.push(enterResponse, advance);
     return clearTimers;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.mode, state.trialIndex]);
+  }, [state.trialIndex]);
 
   useEffect(() => () => clearTimers(), [clearTimers]);
 
