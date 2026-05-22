@@ -14,6 +14,7 @@ export function createDefaultState(): PersistedState {
       instantFeedback: true,
       autoLevelProgression: true,
       audioSource: 'auto',
+      voice: 'alice',
       theme: 'light',
     },
     player: {

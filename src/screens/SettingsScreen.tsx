@@ -12,7 +12,8 @@ import {
   MIN_SPEED,
 } from '../engine/constants';
 import { THEMES } from '../themes';
-import type { AudioSource, ThemeId } from '../engine/types';
+import { VOICES } from '../audio';
+import type { AudioSource, ThemeId, VoiceId } from '../engine/types';
 
 interface Props {
   player: UsePlayerState;
@@ -54,6 +55,20 @@ export default function SettingsScreen({ player, onBack }: Props) {
             <Pill key={t.id} active={t.id === s.theme} onClick={() => player.updateSettings({ theme: t.id as ThemeId })}>{t.label}</Pill>
           ))}
         </div>
+      </Row>
+
+      <Row label="Voice">
+        <select
+          value={s.voice}
+          onChange={(e) => player.updateSettings({ voice: e.target.value as VoiceId })}
+          style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 10px' }}
+        >
+          {VOICES.map((v) => (
+            <option key={v.id} value={v.id}>
+              {v.name} · {v.accent} {v.gender}
+            </option>
+          ))}
+        </select>
       </Row>
 
       <Row label="Audio source">

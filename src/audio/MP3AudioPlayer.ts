@@ -1,8 +1,8 @@
 import { LETTERS } from '../engine/constants';
-import type { Letter } from '../engine/types';
+import type { Letter, VoiceId } from '../engine/types';
 import type { AudioPlayer } from './AudioPlayer';
 
-export function createMP3AudioPlayer(): AudioPlayer {
+export function createMP3AudioPlayer(voice: VoiceId): AudioPlayer {
   let ctx: AudioContext | null = null;
   const buffers = new Map<Letter, AudioBuffer>();
 
@@ -13,7 +13,7 @@ export function createMP3AudioPlayer(): AudioPlayer {
   }
 
   async function loadOne(letter: Letter): Promise<AudioBuffer> {
-    const url = `/audio/letters/${letter}.mp3`;
+    const url = `/audio/letters/${voice}/${letter}.mp3`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`fetch ${url}: ${res.status}`);
     const arr = await res.arrayBuffer();

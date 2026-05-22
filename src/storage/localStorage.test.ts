@@ -12,6 +12,7 @@ const sample: PersistedState = {
     instantFeedback: true,
     autoLevelProgression: true,
     audioSource: 'auto',
+    voice: 'alice',
     theme: 'mono',
   },
   player: {

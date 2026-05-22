@@ -43,6 +43,7 @@ export interface SessionResult {
 
 export type ThemeId = 'mono' | 'indigo' | 'forest' | 'amber' | 'light';
 export type AudioSource = 'auto' | 'mp3' | 'speech';
+export type VoiceId = 'alice' | 'sarah' | 'liam' | 'daniel' | 'charlie';
 
 export interface Settings {
   nBackLevel: number;
@@ -51,6 +52,7 @@ export interface Settings {
   instantFeedback: boolean;
   autoLevelProgression: boolean;
   audioSource: AudioSource;
+  voice: VoiceId;
   theme: ThemeId;
 }
 

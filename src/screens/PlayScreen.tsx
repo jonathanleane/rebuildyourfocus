@@ -26,13 +26,13 @@ export default function PlayScreen({ player, blockNumber, onBlockComplete, onQui
 
   useEffect(() => {
     let cancelled = false;
-    createAudioPlayer(settings.audioSource).then((p) => {
+    createAudioPlayer(settings.audioSource, settings.voice).then((p) => {
       if (!cancelled) setAudio(p);
     });
     return () => {
       cancelled = true;
     };
-  }, [settings.audioSource]);
+  }, [settings.audioSource, settings.voice]);
 
   const engine = useGameEngine({
     audio,

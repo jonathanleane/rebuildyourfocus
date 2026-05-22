@@ -3,23 +3,30 @@
  *
  *   ELEVENLABS_API_KEY=... npm run generate:audio
  *
- * Optional: ELEVENLABS_VOICE_ID overrides the default voice.
- * Writes public/audio/letters/{C,H,K,L,Q,R,S,T}.mp3 (~5-10KB each).
+ * Generates all voices from src/audio/voices.ts into
+ * public/audio/letters/{voiceId}/{letter}.mp3.
+ *
+ * To generate only one voice, set ELEVENLABS_VOICE_FILTER=alice
+ * (matches the slug `id` in voices.ts).
+ *
+ * To use an ad-hoc voice not in voices.ts, set
+ * ELEVENLABS_VOICE_ID=<eleven-id> ELEVENLABS_VOICE_SLUG=<folder-name>.
  */
 import { writeFile, mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { LETTERS } from '../src/engine/constants';
+import { VOICES } from '../src/audio/voices';
 
 const ELEVEN_API = 'https://api.elevenlabs.io/v1/text-to-speech';
-// "Alice — Clear, Engaging Educator" — a premade voice available on the free tier.
-// Library voices like Rachel (21m00Tcm4TlvDq8ikWAM) require a paid plan.
-const VOICE_ID = process.env.ELEVENLABS_VOICE_ID ?? 'Xb7hH8MSUJpSbSDYk0k2';
 const API_KEY = process.env.ELEVENLABS_API_KEY;
-const OUT_DIR = resolve(process.cwd(), 'public/audio/letters');
+const FILTER = process.env.ELEVENLABS_VOICE_FILTER;
+const AD_HOC_VOICE_ID = process.env.ELEVENLABS_VOICE_ID;
+const AD_HOC_SLUG = process.env.ELEVENLABS_VOICE_SLUG;
+const OUT_BASE = resolve(process.cwd(), 'public/audio/letters');
 
-async function generateOne(letter: string): Promise<Buffer> {
+async function generateOne(voiceId: string, letter: string): Promise<Buffer> {
   if (!API_KEY) throw new Error('ELEVENLABS_API_KEY not set');
-  const res = await fetch(`${ELEVEN_API}/${VOICE_ID}?output_format=mp3_44100_64`, {
+  const res = await fetch(`${ELEVEN_API}/${voiceId}?output_format=mp3_44100_64`, {
     method: 'POST',
     headers: {
       'xi-api-key': API_KEY,
@@ -38,15 +45,36 @@ async function generateOne(letter: string): Promise<Buffer> {
   return Buffer.from(await res.arrayBuffer());
 }
 
-async function main() {
-  await mkdir(OUT_DIR, { recursive: true });
+async function generateVoice(slug: string, elevenLabsId: string) {
+  const dir = resolve(OUT_BASE, slug);
+  await mkdir(dir, { recursive: true });
+  let total = 0;
   for (const letter of LETTERS) {
-    process.stdout.write(`Generating ${letter}... `);
-    const mp3 = await generateOne(letter);
-    await writeFile(resolve(OUT_DIR, `${letter}.mp3`), mp3);
-    console.log(`OK (${mp3.length} bytes)`);
+    process.stdout.write(`  ${slug}/${letter}... `);
+    const mp3 = await generateOne(elevenLabsId, letter);
+    await writeFile(resolve(dir, `${letter}.mp3`), mp3);
+    total += mp3.length;
+    console.log(`${mp3.length}B`);
   }
-  console.log(`Done. Wrote ${LETTERS.length} files to ${OUT_DIR}`);
+  console.log(`  ${slug}: ${LETTERS.length} files, ${(total / 1024).toFixed(1)} KB total`);
+}
+
+async function main() {
+  if (AD_HOC_VOICE_ID && AD_HOC_SLUG) {
+    console.log(`Generating ad-hoc voice "${AD_HOC_SLUG}" (${AD_HOC_VOICE_ID})`);
+    await generateVoice(AD_HOC_SLUG, AD_HOC_VOICE_ID);
+    return;
+  }
+  const targets = FILTER ? VOICES.filter((v) => v.id === FILTER) : VOICES;
+  if (targets.length === 0) {
+    throw new Error(`No voices matched filter "${FILTER}"`);
+  }
+  console.log(`Generating ${targets.length} voice(s)...`);
+  for (const v of targets) {
+    console.log(`\n${v.name} (${v.accent}, ${v.gender}) — ${v.elevenLabsId}`);
+    await generateVoice(v.id, v.elevenLabsId);
+  }
+  console.log(`\nDone. Output: ${OUT_BASE}`);
 }
 
 main().catch((err) => {
