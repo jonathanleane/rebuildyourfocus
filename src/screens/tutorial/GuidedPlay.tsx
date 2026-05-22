@@ -1,52 +1,46 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import Grid from '../components/Grid';
-import BigButton from '../components/BigButton';
-import { useGameEngine } from '../state/useGameEngine';
-import { createAudioPlayer, type AudioPlayer } from '../audio';
-import type { UsePlayerState } from '../state/usePlayerState';
-import type { BlockResult } from '../engine/types';
-import { applyOutcome } from '../engine/scoring';
+import Grid from '../../components/Grid';
+import BigButton from '../../components/BigButton';
+import { useGameEngine } from '../../state/useGameEngine';
+import { createAudioPlayer, type AudioPlayer } from '../../audio';
+import type { VoiceId } from '../../engine/types';
 
 interface Props {
-  player: UsePlayerState;
-  blockNumber: number;
-  onBlockComplete: (result: BlockResult, newLevel: number) => void;
+  voice: VoiceId;
+  onDone: (positionAcc: number, letterAcc: number) => void;
   onQuit: () => void;
 }
 
-type Countdown = 'ready' | 'set' | 'go' | null;
+const TUTORIAL_N = 1;
+const TUTORIAL_LENGTH = 11; // 1 setup + 10 scored trials
+const TUTORIAL_MATCHES = 3;
 
-export default function PlayScreen({ player, blockNumber, onBlockComplete, onQuit }: Props) {
-  const settings = player.state.settings;
+export default function GuidedPlay({ voice, onDone, onQuit }: Props) {
   const [audio, setAudio] = useState<AudioPlayer | null>(null);
-  const [countdown, setCountdown] = useState<Countdown>('ready');
   const [posPressed, setPosPressed] = useState(false);
   const [sndPressed, setSndPressed] = useState(false);
+  const [countdown, setCountdown] = useState<'ready' | 'set' | 'go' | null>('ready');
   const pressTimers = useRef<{ pos: ReturnType<typeof setTimeout> | null; snd: ReturnType<typeof setTimeout> | null }>({ pos: null, snd: null });
 
   useEffect(() => {
     let cancelled = false;
-    createAudioPlayer(settings.audioSource, settings.voice).then((p) => {
+    createAudioPlayer('auto', voice).then((p) => {
       if (!cancelled) setAudio(p);
     });
     return () => {
       cancelled = true;
     };
-  }, [settings.audioSource, settings.voice]);
+  }, [voice]);
 
   const engine = useGameEngine({
     audio,
-    settings: { speedMultiplier: settings.speedMultiplier, nBackLevel: settings.nBackLevel },
+    settings: { speedMultiplier: 0.7, nBackLevel: TUTORIAL_N }, // a touch slower than default
   });
 
   useEffect(() => {
     if (engine.mode === 'blockDone' && engine.lastResult) {
-      const result = engine.lastResult;
-      const newLevel = settings.autoLevelProgression
-        ? applyOutcome(settings.nBackLevel, result.outcome)
-        : settings.nBackLevel;
-      player.updateSettings({ nBackLevel: newLevel });
-      onBlockComplete(result, newLevel);
+      const r = engine.lastResult;
+      onDone(r.positionAccuracy, r.letterAccuracy);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [engine.mode]);
@@ -58,7 +52,10 @@ export default function PlayScreen({ player, blockNumber, onBlockComplete, onQui
       setTimeout(() => setCountdown('go'), 1400),
       setTimeout(() => {
         setCountdown(null);
-        engine.startBlock(settings.nBackLevel);
+        engine.startBlock(TUTORIAL_N, undefined, {
+          length: TUTORIAL_LENGTH,
+          matchesPerModality: TUTORIAL_MATCHES,
+        });
       }, 2100),
     ];
     return () => timers.forEach(clearTimeout);
@@ -104,20 +101,50 @@ export default function PlayScreen({ player, blockNumber, onBlockComplete, onQui
     [engine.showStimulus, engine.currentTrial],
   );
 
+  // Previous trial for the hint panel (1-back, so just trialIndex - 1)
+  const prevTrial =
+    engine.trialIndex > 0 ? engine.trials[engine.trialIndex - 1] ?? null : null;
+
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-        <button onClick={onQuit} aria-label="Quit session" style={{ color: 'var(--fg-dim)', fontSize: '0.85rem' }}>
-          ‹ Quit
+        <button onClick={onQuit} aria-label="Skip practice" style={{ color: 'var(--fg-dim)', fontSize: '0.85rem' }}>
+          ‹ Skip
         </button>
         <div style={{ display: 'flex', gap: 12, fontSize: '0.7rem', color: 'var(--fg-dim)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          <span>Block {blockNumber}/{settings.blocksPerSession}</span>
-          <span>{settings.nBackLevel}-back</span>
+          <span>Practice</span>
+          <span>1-back</span>
           <span>
-            {engine.trialIndex >= 0 ? engine.trialIndex + 1 : 0}/{engine.totalTrials}
+            {engine.trialIndex >= 0 ? engine.trialIndex + 1 : 0}/{engine.totalTrials || TUTORIAL_LENGTH}
           </span>
         </div>
         <div style={{ width: 32 }} />
+      </div>
+
+      <div
+        style={{
+          background: 'var(--surface)',
+          border: '1px solid var(--border)',
+          borderRadius: 10,
+          padding: '8px 12px',
+          marginBottom: 12,
+          fontSize: '0.8rem',
+          color: 'var(--fg)',
+          minHeight: '2.4rem',
+          textAlign: 'center',
+        }}
+      >
+        {prevTrial ? (
+          <>
+            <span style={{ color: 'var(--fg-dim)' }}>Previous trial:</span>{' '}
+            <PositionDot index={prevTrial.position} /> · letter <b>{prevTrial.letter}</b>
+            <div style={{ fontSize: '0.7rem', color: 'var(--fg-dim)', marginTop: 2 }}>
+              Tap if this trial matches it.
+            </div>
+          </>
+        ) : (
+          <span style={{ color: 'var(--fg-dim)' }}>The first trial has nothing to compare to. Just watch.</span>
+        )}
       </div>
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative' }}>
@@ -132,11 +159,9 @@ export default function PlayScreen({ player, blockNumber, onBlockComplete, onQui
               alignItems: 'center',
               justifyContent: 'center',
               background: 'var(--bg)',
-              fontSize: '3.5rem',
+              fontSize: '3rem',
               fontWeight: 700,
-              letterSpacing: '-0.03em',
               color: countdown === 'go' ? 'var(--accent)' : 'var(--fg)',
-              transition: 'color 120ms ease',
             }}
           >
             {countdown === 'ready' ? 'Ready' : countdown === 'set' ? 'Set' : 'Go!'}
@@ -149,5 +174,34 @@ export default function PlayScreen({ player, blockNumber, onBlockComplete, onQui
         <BigButton primary onClick={flashSnd} pressed={sndPressed} ariaLabel="Sound match" hotkey="L">Sound</BigButton>
       </div>
     </>
+  );
+}
+
+function PositionDot({ index }: { index: number }) {
+  const row = Math.floor(index / 3);
+  const col = index % 3;
+  return (
+    <span
+      aria-label={`grid cell row ${row + 1} column ${col + 1}`}
+      style={{
+        display: 'inline-grid',
+        gridTemplateColumns: 'repeat(3, 6px)',
+        gridTemplateRows: 'repeat(3, 6px)',
+        gap: 2,
+        verticalAlign: 'middle',
+        marginLeft: 4,
+        marginRight: 4,
+      }}
+    >
+      {Array.from({ length: 9 }).map((_, i) => (
+        <span
+          key={i}
+          style={{
+            background: i === index ? 'var(--accent)' : 'var(--surface-deep)',
+            borderRadius: 1,
+          }}
+        />
+      ))}
+    </span>
   );
 }

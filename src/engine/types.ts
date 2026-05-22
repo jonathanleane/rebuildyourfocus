@@ -62,6 +62,8 @@ export interface Player {
   currentStreak: number;
   longestStreak: number;
   bestLevel: number;
+  /** Optional for forward-compat with older persisted state. */
+  hasSeenTutorial?: boolean;
 }
 
 export interface PersistedState {

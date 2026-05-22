@@ -15,6 +15,7 @@ export interface UsePlayerState {
   state: PersistedState;
   updateSettings: (patch: Partial<Settings>) => void;
   recordSession: (session: SessionResult) => void;
+  setTutorialSeen: (seen: boolean) => void;
   resetAll: () => void;
 }
 
@@ -51,12 +52,19 @@ export function usePlayerState(storage: AppStorage = createLocalStorageAdapter()
     });
   }, []);
 
+  const setTutorialSeen = useCallback((seen: boolean) => {
+    setState((prev) => ({
+      ...prev,
+      player: { ...prev.player, hasSeenTutorial: seen },
+    }));
+  }, []);
+
   const resetAll = useCallback(() => {
     setState(createDefaultState());
     storage.clear();
   }, [storage]);
 
-  return { state, updateSettings, recordSession, resetAll };
+  return { state, updateSettings, recordSession, setTutorialSeen, resetAll };
 }
 
 function computePlayerUpdate(prev: PersistedState['player'], session: SessionResult) {
@@ -81,6 +89,7 @@ function computePlayerUpdate(prev: PersistedState['player'], session: SessionRes
   const longestStreak = Math.max(prev.longestStreak, currentStreak);
 
   return {
+    ...prev,
     totalSessionsCompleted,
     lastSessionDate: session.completed ? today : prev.lastSessionDate,
     currentStreak,

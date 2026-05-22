@@ -23,6 +23,7 @@ export function createDefaultState(): PersistedState {
       currentStreak: 0,
       longestStreak: 0,
       bestLevel: 1,
+      hasSeenTutorial: false,
     },
     history: [],
   };

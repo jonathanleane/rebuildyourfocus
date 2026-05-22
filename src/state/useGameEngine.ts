@@ -9,7 +9,7 @@ import type {
   Trial,
   UserResponse,
 } from '../engine/types';
-import { generateBlock } from '../engine/blockGenerator';
+import { generateBlock, type BlockGenOptions } from '../engine/blockGenerator';
 import { applyOutcome, computeOutcome, scoreBlock } from '../engine/scoring';
 import type { AudioPlayer } from '../audio/AudioPlayer';
 
@@ -86,7 +86,8 @@ export interface UseGameEngine {
   currentTrial: Trial | null;
   showStimulus: boolean;
   lastResult: BlockResult | null;
-  startBlock: (n: number, seed?: number) => void;
+  startBlock: (n: number, seed?: number, options?: BlockGenOptions) => void;
+  trials: Trial[];
   tapPosition: () => void;
   tapSound: () => void;
   reset: () => void;
@@ -153,9 +154,9 @@ export function useGameEngine(opts: GameEngineOptions): UseGameEngine {
   useEffect(() => () => clearTimers(), [clearTimers]);
 
   const startBlock = useCallback(
-    (n: number, seed: number = Date.now()) => {
+    (n: number, seed: number = Date.now(), options?: BlockGenOptions) => {
       clearTimers();
-      const trials = generateBlock(n, seed);
+      const trials = generateBlock(n, seed, options);
       dispatch({ type: 'start', n, trials });
     },
     [clearTimers],
@@ -177,6 +178,7 @@ export function useGameEngine(opts: GameEngineOptions): UseGameEngine {
         state.trialIndex >= 0 ? state.trials[state.trialIndex] ?? null : null,
       showStimulus: state.mode === 'stimulus',
       lastResult: state.lastResult,
+      trials: state.trials,
       startBlock,
       tapPosition,
       tapSound,

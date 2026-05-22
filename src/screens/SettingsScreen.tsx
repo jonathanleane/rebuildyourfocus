@@ -18,9 +18,10 @@ import type { AudioSource, ThemeId, VoiceId } from '../engine/types';
 interface Props {
   player: UsePlayerState;
   onBack: () => void;
+  onReplayTutorial: () => void;
 }
 
-export default function SettingsScreen({ player, onBack }: Props) {
+export default function SettingsScreen({ player, onBack, onReplayTutorial }: Props) {
   const s = player.state.settings;
   const [confirmingReset, setConfirmingReset] = useState(false);
 
@@ -84,7 +85,21 @@ export default function SettingsScreen({ player, onBack }: Props) {
       </Row>
 
       <div style={{ fontSize: '0.7rem', color: 'var(--fg-dim)', textAlign: 'center', marginTop: 8 }}>
-        Keyboard: press <b>A</b> for Position, <b>L</b> for Sound
+        Keyboard: <b>A</b> or <b>←</b> for Position · <b>L</b> or <b>→</b> for Sound
+      </div>
+
+      <div style={{ marginTop: 16 }}>
+        <button
+          onClick={onReplayTutorial}
+          style={{
+            color: 'var(--fg-dim)',
+            fontSize: '0.8rem',
+            textDecoration: 'underline',
+            textDecorationStyle: 'dotted',
+          }}
+        >
+          Replay tutorial
+        </button>
       </div>
 
       <div style={{ marginTop: 'auto', paddingTop: 24 }}>

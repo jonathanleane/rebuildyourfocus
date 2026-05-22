@@ -7,15 +7,23 @@ import {
 import type { Letter, Position, Trial } from './types';
 import { createRng, pickInt, shuffleInPlace, type Rng } from './rng';
 
-export function generateBlock(n: number, seed: number): Trial[] {
+export interface BlockGenOptions {
+  /** Total trials. Defaults to N + BLOCK_EXTRA_TRIALS. */
+  length?: number;
+  /** Matches per modality. Defaults to MATCHES_PER_BLOCK (6). */
+  matchesPerModality?: number;
+}
+
+export function generateBlock(n: number, seed: number, options: BlockGenOptions = {}): Trial[] {
+  const total = options.length ?? n + BLOCK_EXTRA_TRIALS;
+  const matchCount = options.matchesPerModality ?? MATCHES_PER_BLOCK;
   const rng = createRng(seed);
-  const total = n + BLOCK_EXTRA_TRIALS;
   const candidateIndices = Array.from(
     { length: total - n },
     (_, i) => i + n,
   );
-  const positionMatchIndices = pickMatchIndices(rng, candidateIndices);
-  const letterMatchIndices = pickMatchIndices(rng, candidateIndices);
+  const positionMatchIndices = pickMatchIndices(rng, candidateIndices, matchCount);
+  const letterMatchIndices = pickMatchIndices(rng, candidateIndices, matchCount);
 
   const trials: Trial[] = [];
   for (let i = 0; i < total; i++) {
@@ -40,10 +48,10 @@ export function generateBlock(n: number, seed: number): Trial[] {
   return trials;
 }
 
-function pickMatchIndices(rng: Rng, candidates: number[]): Set<number> {
+function pickMatchIndices(rng: Rng, candidates: number[], count: number): Set<number> {
   const pool = [...candidates];
   shuffleInPlace(rng, pool);
-  return new Set(pool.slice(0, MATCHES_PER_BLOCK));
+  return new Set(pool.slice(0, Math.min(count, pool.length)));
 }
 
 function pickNonMatchingPosition(rng: Rng, exclude: Position | null): Position {
