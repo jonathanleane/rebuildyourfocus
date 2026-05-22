@@ -66,6 +66,21 @@ export default function PlayScreen({ player, onBlockDone, onQuit }: Props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [audio]);
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.repeat) return;
+      if (e.key === 'a' || e.key === 'A') {
+        e.preventDefault();
+        engine.tapPosition();
+      } else if (e.key === 'l' || e.key === 'L') {
+        e.preventDefault();
+        engine.tapSound();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [engine.tapPosition, engine.tapSound]);
+
   const blockNumber = sessionBlocks.length + 1;
   const litIndex = useMemo(
     () => (engine.showStimulus && engine.currentTrial ? engine.currentTrial.position : null),

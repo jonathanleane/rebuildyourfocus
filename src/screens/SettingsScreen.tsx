@@ -68,6 +68,10 @@ export default function SettingsScreen({ player, onBack }: Props) {
         </select>
       </Row>
 
+      <div style={{ fontSize: '0.7rem', color: 'var(--fg-dim)', textAlign: 'center', marginTop: 8 }}>
+        Keyboard: press <b>A</b> for Position, <b>L</b> for Sound
+      </div>
+
       <div style={{ marginTop: 'auto', paddingTop: 24 }}>
         {!confirmingReset ? (
           <button onClick={() => setConfirmingReset(true)} style={{ color: 'var(--danger)', fontSize: '0.85rem' }}>Reset all progress</button>
