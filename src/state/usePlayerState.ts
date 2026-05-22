@@ -1,0 +1,96 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { createLocalStorageAdapter } from '../storage/localStorage';
+import type { AppStorage } from '../storage/Storage';
+import type {
+  PersistedState,
+  SessionResult,
+  Settings,
+} from '../engine/types';
+import { createDefaultState } from './defaultState';
+import { HISTORY_CAP } from '../engine/constants';
+
+const SAVE_DEBOUNCE_MS = 500;
+
+export interface UsePlayerState {
+  state: PersistedState;
+  updateSettings: (patch: Partial<Settings>) => void;
+  recordSession: (session: SessionResult) => void;
+  resetAll: () => void;
+}
+
+export function usePlayerState(storage: AppStorage = createLocalStorageAdapter()): UsePlayerState {
+  const [state, setState] = useState<PersistedState>(
+    () => storage.load() ?? createDefaultState(),
+  );
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => storage.save(state), SAVE_DEBOUNCE_MS);
+    return () => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+    };
+  }, [state, storage]);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = state.settings.theme;
+  }, [state.settings.theme]);
+
+  const updateSettings = useCallback((patch: Partial<Settings>) => {
+    setState((prev) => ({
+      ...prev,
+      settings: { ...prev.settings, ...patch },
+    }));
+  }, []);
+
+  const recordSession = useCallback((session: SessionResult) => {
+    setState((prev) => {
+      const history = [session, ...prev.history].slice(0, HISTORY_CAP);
+      const player = computePlayerUpdate(prev.player, session);
+      return { ...prev, history, player };
+    });
+  }, []);
+
+  const resetAll = useCallback(() => {
+    setState(createDefaultState());
+    storage.clear();
+  }, [storage]);
+
+  return { state, updateSettings, recordSession, resetAll };
+}
+
+function computePlayerUpdate(prev: PersistedState['player'], session: SessionResult) {
+  const today = new Date(session.finishedAt).toISOString().slice(0, 10);
+  const lastDate = prev.lastSessionDate;
+  let currentStreak = prev.currentStreak;
+
+  if (session.completed) {
+    if (lastDate === today) {
+      /* no-op */
+    } else if (lastDate && isYesterday(lastDate, today)) {
+      currentStreak = prev.currentStreak + 1;
+    } else {
+      currentStreak = 1;
+    }
+  }
+
+  const totalSessionsCompleted = session.completed
+    ? prev.totalSessionsCompleted + 1
+    : prev.totalSessionsCompleted;
+  const bestLevel = Math.max(prev.bestLevel, session.endingLevel);
+  const longestStreak = Math.max(prev.longestStreak, currentStreak);
+
+  return {
+    totalSessionsCompleted,
+    lastSessionDate: session.completed ? today : prev.lastSessionDate,
+    currentStreak,
+    longestStreak,
+    bestLevel,
+  };
+}
+
+function isYesterday(prev: string, today: string): boolean {
+  const t = new Date(today + 'T00:00:00Z').getTime();
+  const p = new Date(prev + 'T00:00:00Z').getTime();
+  return t - p === 24 * 60 * 60 * 1000;
+}
