@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import Grid from '../../components/Grid';
 import BigButton from '../../components/BigButton';
 import { createAudioPlayer, type AudioPlayer } from '../../audio';
-import { narrate, type NarrationId } from '../../audio/narrations';
+import { narrate, type NarrationHandle, type NarrationId } from '../../audio/narrations';
 import type { Letter, Position, VoiceId } from '../../engine/types';
 
 interface DemoTrial {
@@ -22,15 +22,14 @@ const SEQUENCE: DemoTrial[] = [
   { position: 2, letter: 'K', caption: 'Same letter as 2 back — Sound match.', narrationId: 'concept-5', highlight: 'letter' },
 ];
 
-// Timing per trial:
-//   0 ms    narration starts + caption appears
-//   2200 ms cell lights + letter plays
-//   3500 ms cell off (1300 ms stimulus)
-//   5000 ms next trial
-const NARRATION_LEAD_MS = 2200;
-const STIMULUS_MS = 1300;
-const TRIAL_GAP_MS = 1500;
-const TRIAL_MS = NARRATION_LEAD_MS + STIMULUS_MS + TRIAL_GAP_MS;
+// Per-trial flow (chained, not fixed):
+//   1. Show caption + start narration
+//   2. Wait for narration to finish, then 400ms beat
+//   3. Light the cell + play the letter (1100ms)
+//   4. 700ms gap before next trial
+const POST_NARRATION_GAP_MS = 400;
+const STIMULUS_MS = 1100;
+const TRIAL_GAP_MS = 700;
 
 interface Props {
   voice: VoiceId;
@@ -42,7 +41,8 @@ export default function ConceptDemo({ voice, onDone }: Props) {
   const [showing, setShowing] = useState(false);
   const [finished, setFinished] = useState(false);
   const audioRef = useRef<AudioPlayer | null>(null);
-  const narrationAudioRef = useRef<HTMLAudioElement | null>(null);
+  const narrationRef = useRef<NarrationHandle | null>(null);
+  const cancelledRef = useRef(false);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {
@@ -55,50 +55,63 @@ export default function ConceptDemo({ voice, onDone }: Props) {
     };
   }, [voice]);
 
+  const sleep = (ms: number) =>
+    new Promise<void>((resolve) => {
+      const t = setTimeout(resolve, ms);
+      timersRef.current.push(t);
+    });
+
   const stop = () => {
+    cancelledRef.current = true;
     timersRef.current.forEach(clearTimeout);
     timersRef.current = [];
-    if (narrationAudioRef.current) {
-      narrationAudioRef.current.pause();
-      narrationAudioRef.current = null;
-    }
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
+    if (narrationRef.current) {
+      narrationRef.current.cancel();
+      narrationRef.current = null;
     }
   };
 
-  const play = () => {
+  const play = async () => {
     stop();
+    cancelledRef.current = false;
     setFinished(false);
     setIndex(-1);
     setShowing(false);
 
-    const timers: ReturnType<typeof setTimeout>[] = [];
+    // Brief beat before first trial so users see the layout
+    await sleep(300);
+
     for (let i = 0; i < SEQUENCE.length; i++) {
-      const start = i * TRIAL_MS + 300;
-      // Caption + narration
-      timers.push(
-        setTimeout(() => {
-          setIndex(i);
-          narrationAudioRef.current = narrate(SEQUENCE[i].narrationId, voice);
-        }, start),
-      );
-      // Stimulus light + letter
-      timers.push(
-        setTimeout(() => {
-          setShowing(true);
-          audioRef.current?.playLetter(SEQUENCE[i].letter);
-        }, start + NARRATION_LEAD_MS),
-      );
-      // Stimulus off
-      timers.push(
-        setTimeout(() => setShowing(false), start + NARRATION_LEAD_MS + STIMULUS_MS),
-      );
+      if (cancelledRef.current) return;
+      const trial = SEQUENCE[i];
+      setIndex(i);
+      setShowing(false);
+
+      // 1. Narrate
+      narrationRef.current = narrate(trial.narrationId, voice);
+      await narrationRef.current.done;
+      if (cancelledRef.current) return;
+      narrationRef.current = null;
+
+      // 2. Post-narration beat
+      await sleep(POST_NARRATION_GAP_MS);
+      if (cancelledRef.current) return;
+
+      // 3. Stimulus on + letter
+      setShowing(true);
+      audioRef.current?.playLetter(trial.letter);
+      await sleep(STIMULUS_MS);
+      if (cancelledRef.current) return;
+
+      setShowing(false);
+
+      // 4. Gap before next trial (skip after last)
+      if (i < SEQUENCE.length - 1) {
+        await sleep(TRIAL_GAP_MS);
+      }
     }
-    timers.push(
-      setTimeout(() => setFinished(true), SEQUENCE.length * TRIAL_MS + 300),
-    );
-    timersRef.current = timers;
+
+    if (!cancelledRef.current) setFinished(true);
   };
 
   useEffect(() => {

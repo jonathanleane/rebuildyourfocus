@@ -48,25 +48,32 @@ export default function GuidedPlay({ voice, onDone, onQuit }: Props) {
 
   useEffect(() => {
     if (!audio) return;
+    let cancelled = false;
     const narration = narrate('practice-intro', voice);
-    // Give the narration ~3.5s to finish before the countdown so they don't overlap.
-    const timers = [
-      setTimeout(() => setCountdown('set'), 4000),
-      setTimeout(() => setCountdown('go'), 4700),
-      setTimeout(() => {
-        setCountdown(null);
-        engine.startBlock(TUTORIAL_N, undefined, {
-          length: TUTORIAL_LENGTH,
-          matchesPerModality: TUTORIAL_MATCHES,
-        });
-      }, 5400),
-    ];
+    const timers: ReturnType<typeof setTimeout>[] = [];
+
+    setCountdown('ready');
+    narration.done.then(() => {
+      if (cancelled) return;
+      // After narration finishes, run Ready/Set/Go and start the block.
+      timers.push(setTimeout(() => !cancelled && setCountdown('set'), 700));
+      timers.push(setTimeout(() => !cancelled && setCountdown('go'), 1400));
+      timers.push(
+        setTimeout(() => {
+          if (cancelled) return;
+          setCountdown(null);
+          engine.startBlock(TUTORIAL_N, undefined, {
+            length: TUTORIAL_LENGTH,
+            matchesPerModality: TUTORIAL_MATCHES,
+          });
+        }, 2100),
+      );
+    });
+
     return () => {
+      cancelled = true;
+      narration.cancel();
       timers.forEach(clearTimeout);
-      if (narration) narration.pause();
-      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-      }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [audio]);
