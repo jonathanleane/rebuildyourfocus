@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import BigButton from '../components/BigButton';
 import Toggle from '../components/Toggle';
 import Slider from '../components/Slider';
 import type { UsePlayerState } from '../state/usePlayerState';
 import {
+  LETTERS,
   MAX_BLOCKS_PER_SESSION,
   MAX_LEVEL,
   MAX_SPEED,
@@ -12,8 +13,8 @@ import {
   MIN_SPEED,
 } from '../engine/constants';
 import { THEMES } from '../themes';
-import { VOICES } from '../audio';
-import type { AudioSource, ThemeId, VoiceId } from '../engine/types';
+import { VOICES, createAudioPlayer, type AudioPlayer } from '../audio';
+import type { AudioSource, Letter, ThemeId, VoiceId } from '../engine/types';
 
 interface Props {
   player: UsePlayerState;
@@ -71,6 +72,10 @@ export default function SettingsScreen({ player, onBack, onReplayTutorial, onSho
             </option>
           ))}
         </select>
+      </Row>
+
+      <Row label="Preview voice" sub="Tap a letter to hear it">
+        <VoicePreview voice={s.voice} audioSource={s.audioSource} />
       </Row>
 
       <Row label="Audio source">
@@ -168,5 +173,57 @@ function Pill({ active, onClick, children }: { active: boolean; onClick: () => v
     >
       {children}
     </button>
+  );
+}
+
+function VoicePreview({ voice, audioSource }: { voice: VoiceId; audioSource: AudioSource }) {
+  const [audio, setAudio] = useState<AudioPlayer | null>(null);
+  const [activeLetter, setActiveLetter] = useState<Letter | null>(null);
+  const activeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    createAudioPlayer(audioSource, voice).then((p) => {
+      if (!cancelled) setAudio(p);
+    });
+    return () => {
+      cancelled = true;
+      if (activeTimer.current) clearTimeout(activeTimer.current);
+    };
+  }, [voice, audioSource]);
+
+  const play = (letter: Letter) => {
+    audio?.playLetter(letter);
+    setActiveLetter(letter);
+    if (activeTimer.current) clearTimeout(activeTimer.current);
+    activeTimer.current = setTimeout(() => setActiveLetter(null), 500);
+  };
+
+  return (
+    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+      {LETTERS.map((letter) => {
+        const active = letter === activeLetter;
+        return (
+          <button
+            key={letter}
+            onClick={() => play(letter)}
+            aria-label={`Play letter ${letter}`}
+            style={{
+              background: active ? 'var(--accent)' : 'var(--surface-deep)',
+              color: active ? 'var(--accent-fg)' : 'var(--fg)',
+              borderRadius: 6,
+              padding: '4px 8px',
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              minWidth: 28,
+              transform: active ? 'scale(0.92)' : 'scale(1)',
+              transition: 'transform 80ms ease, background 100ms ease',
+            }}
+          >
+            {letter}
+          </button>
+        );
+      })}
+    </div>
   );
 }

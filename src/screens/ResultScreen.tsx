@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import BigButton from '../components/BigButton';
 import ThresholdBar from '../components/ThresholdBar';
 import type { BlockResult } from '../engine/types';
@@ -9,6 +10,9 @@ interface Props {
   onContinue: () => void;
   onDone: () => void;
 }
+
+const COUNT_DURATION_MS = 900;
+const SECOND_CARD_DELAY_MS = 300;
 
 export default function ResultScreen({ result, blocksLeft, level, onContinue, onDone }: Props) {
   const headline =
@@ -22,8 +26,8 @@ export default function ResultScreen({ result, blocksLeft, level, onContinue, on
         {sessionDone ? 'Session complete' : `${blocksLeft} block${blocksLeft === 1 ? '' : 's'} left`}
       </div>
 
-      <ScoreCard label="Position" value={result.positionAccuracy} />
-      <ScoreCard label="Sound" value={result.letterAccuracy} />
+      <ScoreCard label="Position" value={result.positionAccuracy} delay={0} />
+      <ScoreCard label="Sound" value={result.letterAccuracy} delay={SECOND_CARD_DELAY_MS} />
 
       <div
         style={{
@@ -50,17 +54,49 @@ export default function ResultScreen({ result, blocksLeft, level, onContinue, on
   );
 }
 
-function ScoreCard({ label, value }: { label: string; value: number }) {
+function ScoreCard({ label, value, delay }: { label: string; value: number; delay: number }) {
+  const animatedPct = useCountUp(Math.round(value * 100), COUNT_DURATION_MS, delay);
   return (
     <div style={{ background: 'var(--surface)', borderRadius: 14, padding: 14, marginBottom: 10 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
         <div>
-          <div style={{ fontSize: '1.6rem', fontWeight: 700 }}>{Math.round(value * 100)}%</div>
+          <div style={{ fontSize: '1.6rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
+            {animatedPct}%
+          </div>
           <div style={{ fontSize: '0.65rem', color: 'var(--fg-dim)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
         </div>
         <div style={{ fontSize: '0.6rem', color: 'var(--fg-dim)' }}>75%&nbsp;&nbsp;90%</div>
       </div>
-      <ThresholdBar value={value} />
+      <ThresholdBar value={value} animate duration={COUNT_DURATION_MS} delay={delay} />
     </div>
   );
+}
+
+function useCountUp(target: number, durationMs: number, delayMs: number): number {
+  const [n, setN] = useState(0);
+  useEffect(() => {
+    let raf = 0;
+    let startTs = 0;
+    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) {
+      setN(target);
+      return;
+    }
+    const tick = (ts: number) => {
+      if (!startTs) startTs = ts;
+      const elapsed = ts - startTs - delayMs;
+      if (elapsed < 0) {
+        raf = requestAnimationFrame(tick);
+        return;
+      }
+      const p = Math.min(1, elapsed / durationMs);
+      // ease-out cubic
+      const eased = 1 - Math.pow(1 - p, 3);
+      setN(Math.round(target * eased));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, durationMs, delayMs]);
+  return n;
 }
