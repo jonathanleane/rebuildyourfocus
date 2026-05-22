@@ -11,7 +11,9 @@ import { resolve } from 'node:path';
 import { LETTERS } from '../src/engine/constants';
 
 const ELEVEN_API = 'https://api.elevenlabs.io/v1/text-to-speech';
-const VOICE_ID = process.env.ELEVENLABS_VOICE_ID ?? '21m00Tcm4TlvDq8ikWAM';
+// "Alice — Clear, Engaging Educator" — a premade voice available on the free tier.
+// Library voices like Rachel (21m00Tcm4TlvDq8ikWAM) require a paid plan.
+const VOICE_ID = process.env.ELEVENLABS_VOICE_ID ?? 'Xb7hH8MSUJpSbSDYk0k2';
 const API_KEY = process.env.ELEVENLABS_API_KEY;
 const OUT_DIR = resolve(process.cwd(), 'public/audio/letters');
 
