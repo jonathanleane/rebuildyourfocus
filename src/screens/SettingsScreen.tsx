@@ -19,9 +19,10 @@ interface Props {
   player: UsePlayerState;
   onBack: () => void;
   onReplayTutorial: () => void;
+  onShowScience: () => void;
 }
 
-export default function SettingsScreen({ player, onBack, onReplayTutorial }: Props) {
+export default function SettingsScreen({ player, onBack, onReplayTutorial, onShowScience }: Props) {
   const s = player.state.settings;
   const [confirmingReset, setConfirmingReset] = useState(false);
 
@@ -88,7 +89,7 @@ export default function SettingsScreen({ player, onBack, onReplayTutorial }: Pro
         Keyboard: <b>A</b> or <b>←</b> for Position · <b>L</b> or <b>→</b> for Sound
       </div>
 
-      <div style={{ marginTop: 16 }}>
+      <div style={{ marginTop: 16, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
         <button
           onClick={onReplayTutorial}
           style={{
@@ -99,6 +100,17 @@ export default function SettingsScreen({ player, onBack, onReplayTutorial }: Pro
           }}
         >
           Replay tutorial
+        </button>
+        <button
+          onClick={onShowScience}
+          style={{
+            color: 'var(--fg-dim)',
+            fontSize: '0.8rem',
+            textDecoration: 'underline',
+            textDecorationStyle: 'dotted',
+          }}
+        >
+          Does this work? (the science)
         </button>
       </div>
 

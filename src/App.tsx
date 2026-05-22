@@ -5,6 +5,7 @@ import PlayScreen from './screens/PlayScreen';
 import ResultScreen from './screens/ResultScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import StatsScreen from './screens/StatsScreen';
+import ScienceScreen from './screens/ScienceScreen';
 import TutorialScreen from './screens/TutorialScreen';
 import { usePlayerState } from './state/usePlayerState';
 import type { BlockResult, SessionResult } from './engine/types';
@@ -15,6 +16,7 @@ type Screen =
   | { name: 'result'; result: BlockResult; blocksLeft: number; level: number }
   | { name: 'stats' }
   | { name: 'settings' }
+  | { name: 'science' }
   | { name: 'tutorial' };
 
 interface Session {
@@ -90,6 +92,7 @@ export default function App() {
   const continueSession = useCallback(() => setScreen({ name: 'play' }), []);
   const showStats = useCallback(() => setScreen({ name: 'stats' }), []);
   const showSettings = useCallback(() => setScreen({ name: 'settings' }), []);
+  const showScience = useCallback(() => setScreen({ name: 'science' }), []);
   const showTutorial = useCallback(() => {
     player.setTutorialSeen(false);
     setScreen({ name: 'tutorial' });
@@ -130,8 +133,14 @@ export default function App() {
         />
       )}
       {screen.name === 'stats' && <StatsScreen player={player} onBack={showMenu} />}
+      {screen.name === 'science' && <ScienceScreen onBack={showMenu} />}
       {screen.name === 'settings' && (
-        <SettingsScreen player={player} onBack={showMenu} onReplayTutorial={showTutorial} />
+        <SettingsScreen
+          player={player}
+          onBack={showMenu}
+          onReplayTutorial={showTutorial}
+          onShowScience={showScience}
+        />
       )}
     </Layout>
   );
