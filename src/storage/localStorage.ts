@@ -1,8 +1,8 @@
 import { STORAGE_KEY } from '../engine/constants';
 import type { PersistedState } from '../engine/types';
-import type { Storage } from './Storage';
+import type { AppStorage } from './Storage';
 
-export function createLocalStorageAdapter(): Storage {
+export function createLocalStorageAdapter(): AppStorage {
   return {
     load(): PersistedState | null {
       try {

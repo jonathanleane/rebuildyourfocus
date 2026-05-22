@@ -1,6 +1,6 @@
 import type { PersistedState } from '../engine/types';
 
-export interface Storage {
+export interface AppStorage {
   load(): PersistedState | null;
   save(state: PersistedState): void;
   clear(): void;

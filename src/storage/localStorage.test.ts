@@ -1,4 +1,3 @@
-// @vitest-environment jsdom
 import { describe, it, expect, beforeEach } from 'vitest';
 import { createLocalStorageAdapter } from './localStorage';
 import { STORAGE_KEY } from '../engine/constants';
