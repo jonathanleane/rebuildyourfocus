@@ -1,3 +1,9 @@
+import Layout from './components/Layout';
+
 export default function App() {
-  return <div style={{ padding: 24 }}>N-Back Challenge — bootstrap OK</div>;
+  return (
+    <Layout>
+      <div style={{ color: 'var(--fg-dim)' }}>App shell ready — screens incoming.</div>
+    </Layout>
+  );
 }
