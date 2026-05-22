@@ -14,9 +14,12 @@ interface Props {
   onQuit: () => void;
 }
 
+type Countdown = 'ready' | 'set' | 'go' | null;
+
 export default function PlayScreen({ player, blockNumber, onBlockComplete, onQuit }: Props) {
   const settings = player.state.settings;
   const [audio, setAudio] = useState<AudioPlayer | null>(null);
+  const [countdown, setCountdown] = useState<Countdown>('ready');
 
   useEffect(() => {
     let cancelled = false;
@@ -46,7 +49,16 @@ export default function PlayScreen({ player, blockNumber, onBlockComplete, onQui
   }, [engine.mode]);
 
   useEffect(() => {
-    if (audio) engine.startBlock(settings.nBackLevel);
+    if (!audio) return;
+    const timers = [
+      setTimeout(() => setCountdown('set'), 700),
+      setTimeout(() => setCountdown('go'), 1400),
+      setTimeout(() => {
+        setCountdown(null);
+        engine.startBlock(settings.nBackLevel);
+      }, 2100),
+    ];
+    return () => timers.forEach(clearTimeout);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [audio]);
 
@@ -78,7 +90,7 @@ export default function PlayScreen({ player, blockNumber, onBlockComplete, onQui
         </button>
         <div style={{ display: 'flex', gap: 12, fontSize: '0.7rem', color: 'var(--fg-dim)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           <span>Block {blockNumber}/{settings.blocksPerSession}</span>
-          <span>Level {settings.nBackLevel}</span>
+          <span>{settings.nBackLevel}-back</span>
           <span>
             {engine.trialIndex >= 0 ? engine.trialIndex + 1 : 0}/{engine.totalTrials}
           </span>
@@ -86,8 +98,28 @@ export default function PlayScreen({ player, blockNumber, onBlockComplete, onQui
         <div style={{ width: 32 }} />
       </div>
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative' }}>
         <Grid litIndex={litIndex} />
+        {countdown && (
+          <div
+            aria-live="polite"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'var(--bg)',
+              fontSize: '3.5rem',
+              fontWeight: 700,
+              letterSpacing: '-0.03em',
+              color: countdown === 'go' ? 'var(--accent)' : 'var(--fg)',
+              transition: 'color 120ms ease',
+            }}
+          >
+            {countdown === 'ready' ? 'Ready' : countdown === 'set' ? 'Set' : 'Go!'}
+          </div>
+        )}
       </div>
 
       <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>

@@ -11,7 +11,7 @@ interface Props {
 }
 
 export default function MenuScreen({ player, onStart, onStats, onSettings }: Props) {
-  const { player: p } = player.state;
+  const { player: p, settings: s } = player.state;
   return (
     <>
       <div style={{ fontSize: '1.8rem', fontWeight: 700, letterSpacing: '-0.02em', marginTop: 16 }}>N-Back</div>
@@ -35,6 +35,9 @@ export default function MenuScreen({ player, onStart, onStats, onSettings }: Pro
       <ProgressRing value={p.totalSessionsCompleted} max={CHALLENGE_TARGET} label="Sessions" />
 
       <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--fg-dim)' }}>
+          Starting at <b style={{ color: 'var(--fg)' }}>{s.nBackLevel}-back</b> · {s.blocksPerSession} blocks
+        </div>
         <BigButton primary onClick={onStart}>Start Session</BigButton>
         <div style={{ display: 'flex', gap: 12 }}>
           <BigButton onClick={onStats}>Stats</BigButton>
