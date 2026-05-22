@@ -6,6 +6,11 @@ node_modules/
 dist/
 .vite/
 *.log
+*.tsbuildinfo
+vite.config.d.ts
+vite.config.js
+vitest.config.d.ts
+vitest.config.js
 .env
 .env.local
 .env.*.local

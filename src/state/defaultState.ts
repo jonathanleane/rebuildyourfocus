@@ -14,7 +14,7 @@ export function createDefaultState(): PersistedState {
       instantFeedback: true,
       autoLevelProgression: true,
       audioSource: 'auto',
-      theme: 'mono',
+      theme: 'light',
     },
     player: {
       totalSessionsCompleted: 0,

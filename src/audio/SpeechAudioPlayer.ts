@@ -8,7 +8,8 @@ export function createSpeechAudioPlayer(): AudioPlayer {
     },
     async playLetter(letter: Letter) {
       if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-      const utter = new SpeechSynthesisUtterance(letter);
+      // Lowercase so voices don't announce "Capital S" etc.
+      const utter = new SpeechSynthesisUtterance(letter.toLowerCase());
       utter.rate = 1.1;
       utter.volume = 1;
       window.speechSynthesis.cancel();
