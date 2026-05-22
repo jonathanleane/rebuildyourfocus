@@ -1,0 +1,19 @@
+# Brainstorming/visual companion session state
+.superpowers/
+
+# Node
+node_modules/
+dist/
+.vite/
+*.log
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
