@@ -5,10 +5,11 @@ interface Props {
   onClick?: () => void;
   primary?: boolean;
   disabled?: boolean;
+  pressed?: boolean;
   ariaLabel?: string;
 }
 
-export default function BigButton({ children, onClick, primary, disabled, ariaLabel }: Props) {
+export default function BigButton({ children, onClick, primary, disabled, pressed, ariaLabel }: Props) {
   return (
     <button
       onClick={onClick}
@@ -23,7 +24,9 @@ export default function BigButton({ children, onClick, primary, disabled, ariaLa
         padding: '18px 0',
         fontSize: '1rem',
         fontWeight: 600,
-        opacity: disabled ? 0.4 : 1,
+        opacity: disabled ? 0.4 : pressed ? 0.7 : 1,
+        transform: pressed ? 'scale(0.96)' : 'scale(1)',
+        transition: 'transform 80ms ease, opacity 80ms ease',
       }}
     >
       {children}

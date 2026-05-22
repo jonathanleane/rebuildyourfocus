@@ -101,7 +101,7 @@ export function useGameEngine(opts: GameEngineOptions): UseGameEngine {
   const [state, dispatch] = useReducer(reducer, initial);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const audio = opts.audio;
-  const speed = Math.max(1, Math.min(5, opts.settings.speedMultiplier));
+  const speed = Math.max(0.5, Math.min(5, opts.settings.speedMultiplier));
   const responseMs = BASE_RESPONSE_WINDOW_MS / speed;
   // Stable reference to current responses so the finish effect can read the latest.
   const responsesRef = useRef(state.responses);

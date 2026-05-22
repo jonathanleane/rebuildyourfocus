@@ -16,7 +16,7 @@ export const MIN_BLOCKS_PER_SESSION = 5;
 export const MAX_BLOCKS_PER_SESSION = 20;
 export const DEFAULT_BLOCKS_PER_SESSION = 10;
 
-export const MIN_SPEED = 1.0;
+export const MIN_SPEED = 0.5;
 export const MAX_SPEED = 5.0;
 export const DEFAULT_SPEED = 1.0;
 

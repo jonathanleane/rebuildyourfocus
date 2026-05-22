@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Grid from '../components/Grid';
 import BigButton from '../components/BigButton';
 import { useGameEngine } from '../state/useGameEngine';
@@ -20,6 +20,9 @@ export default function PlayScreen({ player, blockNumber, onBlockComplete, onQui
   const settings = player.state.settings;
   const [audio, setAudio] = useState<AudioPlayer | null>(null);
   const [countdown, setCountdown] = useState<Countdown>('ready');
+  const [posPressed, setPosPressed] = useState(false);
+  const [sndPressed, setSndPressed] = useState(false);
+  const pressTimers = useRef<{ pos: ReturnType<typeof setTimeout> | null; snd: ReturnType<typeof setTimeout> | null }>({ pos: null, snd: null });
 
   useEffect(() => {
     let cancelled = false;
@@ -62,20 +65,39 @@ export default function PlayScreen({ player, blockNumber, onBlockComplete, onQui
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [audio]);
 
+  const flashPos = useCallback(() => {
+    engine.tapPosition();
+    setPosPressed(true);
+    if (pressTimers.current.pos) clearTimeout(pressTimers.current.pos);
+    pressTimers.current.pos = setTimeout(() => setPosPressed(false), 220);
+  }, [engine.tapPosition]);
+
+  const flashSnd = useCallback(() => {
+    engine.tapSound();
+    setSndPressed(true);
+    if (pressTimers.current.snd) clearTimeout(pressTimers.current.snd);
+    pressTimers.current.snd = setTimeout(() => setSndPressed(false), 220);
+  }, [engine.tapSound]);
+
+  useEffect(() => () => {
+    if (pressTimers.current.pos) clearTimeout(pressTimers.current.pos);
+    if (pressTimers.current.snd) clearTimeout(pressTimers.current.snd);
+  }, []);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.repeat) return;
       if (e.key === 'a' || e.key === 'A') {
         e.preventDefault();
-        engine.tapPosition();
+        flashPos();
       } else if (e.key === 'l' || e.key === 'L') {
         e.preventDefault();
-        engine.tapSound();
+        flashSnd();
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [engine.tapPosition, engine.tapSound]);
+  }, [flashPos, flashSnd]);
 
   const litIndex = useMemo(
     () => (engine.showStimulus && engine.currentTrial ? engine.currentTrial.position : null),
@@ -123,8 +145,8 @@ export default function PlayScreen({ player, blockNumber, onBlockComplete, onQui
       </div>
 
       <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
-        <BigButton onClick={engine.tapPosition} ariaLabel="Position match">Position</BigButton>
-        <BigButton primary onClick={engine.tapSound} ariaLabel="Sound match">Sound</BigButton>
+        <BigButton onClick={flashPos} pressed={posPressed} ariaLabel="Position match">Position</BigButton>
+        <BigButton primary onClick={flashSnd} pressed={sndPressed} ariaLabel="Sound match">Sound</BigButton>
       </div>
     </>
   );
