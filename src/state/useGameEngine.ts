@@ -84,6 +84,7 @@ export interface UseGameEngine {
   trialIndex: number;
   totalTrials: number;
   currentTrial: Trial | null;
+  currentResponse: UserResponse | null;
   showStimulus: boolean;
   lastResult: BlockResult | null;
   startBlock: (n: number, seed?: number, options?: BlockGenOptions) => void;
@@ -176,6 +177,8 @@ export function useGameEngine(opts: GameEngineOptions): UseGameEngine {
       totalTrials: state.trials.length,
       currentTrial:
         state.trialIndex >= 0 ? state.trials[state.trialIndex] ?? null : null,
+      currentResponse:
+        state.trialIndex >= 0 ? state.responses[state.trialIndex] ?? null : null,
       showStimulus: state.mode === 'stimulus',
       lastResult: state.lastResult,
       trials: state.trials,
