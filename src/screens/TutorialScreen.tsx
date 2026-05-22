@@ -39,6 +39,26 @@ export default function TutorialScreen({ player, onFinish, onSkip }: Props) {
           <p style={{ fontSize: '0.95rem', lineHeight: 1.6, color: 'var(--fg-dim)', marginTop: 12 }}>
             This walkthrough takes ~2 minutes.
           </p>
+          <div
+            role="note"
+            style={{
+              marginTop: 20,
+              padding: '10px 14px',
+              borderRadius: 10,
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+              fontSize: '0.85rem',
+              color: 'var(--fg)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+            }}
+          >
+            <span aria-hidden style={{ fontSize: '1.1rem' }}>🔊</span>
+            <span>
+              Make sure your sound is <b>on</b>. The game and tutorial both rely on audio.
+            </span>
+          </div>
         </div>
         <div style={{ display: 'flex', gap: 12 }}>
           <BigButton onClick={onSkip}>Skip — I know the rules</BigButton>

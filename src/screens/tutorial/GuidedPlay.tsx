@@ -3,6 +3,7 @@ import Grid from '../../components/Grid';
 import BigButton from '../../components/BigButton';
 import { useGameEngine } from '../../state/useGameEngine';
 import { createAudioPlayer, type AudioPlayer } from '../../audio';
+import { narrate } from '../../audio/narrations';
 import type { VoiceId } from '../../engine/types';
 
 interface Props {
@@ -19,7 +20,7 @@ export default function GuidedPlay({ voice, onDone, onQuit }: Props) {
   const [audio, setAudio] = useState<AudioPlayer | null>(null);
   const [posPressed, setPosPressed] = useState(false);
   const [sndPressed, setSndPressed] = useState(false);
-  const [countdown, setCountdown] = useState<'ready' | 'set' | 'go' | null>('ready');
+  const [countdown, setCountdown] = useState<'ready' | 'set' | 'go' | null>(null);
   const pressTimers = useRef<{ pos: ReturnType<typeof setTimeout> | null; snd: ReturnType<typeof setTimeout> | null }>({ pos: null, snd: null });
 
   useEffect(() => {
@@ -47,18 +48,26 @@ export default function GuidedPlay({ voice, onDone, onQuit }: Props) {
 
   useEffect(() => {
     if (!audio) return;
+    const narration = narrate('practice-intro', voice);
+    // Give the narration ~3.5s to finish before the countdown so they don't overlap.
     const timers = [
-      setTimeout(() => setCountdown('set'), 700),
-      setTimeout(() => setCountdown('go'), 1400),
+      setTimeout(() => setCountdown('set'), 4000),
+      setTimeout(() => setCountdown('go'), 4700),
       setTimeout(() => {
         setCountdown(null);
         engine.startBlock(TUTORIAL_N, undefined, {
           length: TUTORIAL_LENGTH,
           matchesPerModality: TUTORIAL_MATCHES,
         });
-      }, 2100),
+      }, 5400),
     ];
-    return () => timers.forEach(clearTimeout);
+    return () => {
+      timers.forEach(clearTimeout);
+      if (narration) narration.pause();
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [audio]);
 
