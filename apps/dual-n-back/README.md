@@ -5,6 +5,10 @@ A browser-based dual n-back working-memory trainer, faithful to the
 paradigm. Built with Vite + React + TypeScript. Runs entirely client-side —
 no accounts, no tracking, no backend.
 
+**Free, ad-free, open source under MIT.** Part of the
+[Rebuild Your Focus](https://github.com/jonathanleane/rebuildyourfocus) suite.
+Play it at <https://rebuildyourfocus.com>, or run it yourself — see below.
+
 > **Why dual n-back?** It's one of the few cognitive training paradigms
 > with peer-reviewed evidence for transfer to fluid intelligence. The
 > protocol is unpleasant by design — that's the whole point. If you can
@@ -38,6 +42,17 @@ no accounts, no tracking, no backend.
 
 ## Quickstart
 
+Run **just this game** as a standalone project (no monorepo):
+
+```bash
+npx degit jonathanleane/rebuildyourfocus/apps/dual-n-back my-n-back
+cd my-n-back
+npm install
+npm run dev
+```
+
+Or clone the **whole suite** (monorepo with all games):
+
 ```bash
 git clone https://github.com/jonathanleane/rebuildyourfocus.git
 cd rebuildyourfocus
@@ -45,8 +60,8 @@ npm install
 npm -w dual-n-back run dev
 ```
 
-Open <http://localhost:5173/>. The app uses your browser's speech synthesis
-by default — works out of the box.
+Either way, open <http://localhost:5173/>. The app uses your browser's
+speech synthesis by default — works out of the box.
 
 ### Scripts
 

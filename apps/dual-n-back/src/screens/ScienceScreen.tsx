@@ -1,5 +1,5 @@
 import ReactMarkdown from 'react-markdown';
-import literatureReview from '../../../../docs/literature-review.md?raw';
+import literatureReview from '../content/literature-review.md?raw';
 
 interface Props {
   onBack: () => void;
@@ -92,12 +92,12 @@ export default function ScienceScreen({ onBack }: Props) {
       <div style={{ marginTop: 24, padding: 12, background: 'var(--surface)', borderRadius: 12, fontSize: '0.75rem', color: 'var(--fg-dim)' }}>
         Source for this review:{' '}
         <a
-          href="https://github.com/jonathanleane/rebuildyourfocus/blob/main/docs/literature-review.md"
+          href="https://github.com/jonathanleane/rebuildyourfocus/blob/main/apps/dual-n-back/src/content/literature-review.md"
           target="_blank"
           rel="noopener noreferrer"
           style={{ color: 'var(--accent)' }}
         >
-          docs/literature-review.md on GitHub
+          literature-review.md on GitHub
         </a>
         . Spotted an error or a study we should add? Open an issue or PR.
       </div>
