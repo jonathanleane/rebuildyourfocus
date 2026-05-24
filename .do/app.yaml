@@ -1,5 +1,12 @@
 name: rebuildyourfocus
 region: syd
+domains:
+  - domain: rebuildyourfocus.com
+    type: PRIMARY
+    zone: rebuildyourfocus.com
+  - domain: www.rebuildyourfocus.com
+    type: ALIAS
+    zone: rebuildyourfocus.com
 static_sites:
   - name: web
     source_dir: /
