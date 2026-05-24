@@ -7,10 +7,11 @@ static_sites:
       repo: jonathanleane/rebuildyourfocus
       branch: main
       deploy_on_push: true
-    # Delete the lock file before install to dodge npm bug 4828
-    # (optional rollup native deps not installed cross-platform from
-    # a lock file generated on a different OS).
-    build_command: rm -f package-lock.json && npm install --no-audit --no-fund && npm -w dual-n-back run build
+    # DO buildpack auto-runs `npm install` against the macOS-generated
+    # lock file BEFORE this command, which trips npm bug 4828 (optional
+    # rollup native deps skipped cross-platform). Wipe lock + node_modules
+    # and reinstall from scratch so rollup's linux native binary lands.
+    build_command: rm -rf package-lock.json node_modules apps/dual-n-back/node_modules && npm install --no-audit --no-fund && npm -w dual-n-back run build
     output_dir: apps/dual-n-back/dist
     environment_slug: node-js
     catchall_document: index.html
