@@ -3,6 +3,7 @@ import MultiLineChart from '../components/MultiLineChart';
 import CalendarHeatmap from '../components/CalendarHeatmap';
 import type { UsePlayerState } from '../state/usePlayerState';
 import type { SessionResult } from '../engine/types';
+import { localDateKey } from '../engine/dates';
 
 interface Props {
   player: UsePlayerState;
@@ -23,11 +24,11 @@ export default function StatsScreen({ player, onBack }: Props) {
   const positionAccs = accuracyWindow.map(avgAcc('positionAccuracy'));
   const letterAccs = accuracyWindow.map(avgAcc('letterAccuracy'));
 
-  // Activity counts per day across ALL recorded blocks (completed + incomplete).
+  // Activity counts per LOCAL day across ALL recorded blocks (completed + incomplete).
   const dayCounts: Record<string, number> = {};
   for (const session of history) {
     for (const block of session.blocks) {
-      const day = new Date(block.finishedAt).toISOString().slice(0, 10);
+      const day = localDateKey(block.finishedAt);
       dayCounts[day] = (dayCounts[day] ?? 0) + 1;
     }
   }

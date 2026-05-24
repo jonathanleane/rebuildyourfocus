@@ -8,6 +8,7 @@ import type {
 } from '../engine/types';
 import { createDefaultState } from './defaultState';
 import { HISTORY_CAP } from '../engine/constants';
+import { localDateKey } from '../engine/dates';
 
 const SAVE_DEBOUNCE_MS = 500;
 
@@ -68,7 +69,7 @@ export function usePlayerState(storage: AppStorage = createLocalStorageAdapter()
 }
 
 function computePlayerUpdate(prev: PersistedState['player'], session: SessionResult) {
-  const today = new Date(session.finishedAt).toISOString().slice(0, 10);
+  const today = localDateKey(session.finishedAt);
   const lastDate = prev.lastSessionDate;
   let currentStreak = prev.currentStreak;
 

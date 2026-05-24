@@ -1,5 +1,7 @@
+import { localDateKey, localMidnight } from '../engine/dates';
+
 interface Props {
-  /** Map from 'YYYY-MM-DD' to count of blocks. */
+  /** Map from local-date 'YYYY-MM-DD' to count of blocks. */
   counts: Record<string, number>;
   weeks?: number;
 }
@@ -7,8 +9,7 @@ interface Props {
 const DAY_LABELS = ['M', 'W', 'F'];
 
 export default function CalendarHeatmap({ counts, weeks = 12 }: Props) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const today = localMidnight(new Date());
 
   // Start from the Monday `weeks - 1` weeks ago to align the grid.
   const start = new Date(today);
@@ -20,10 +21,10 @@ export default function CalendarHeatmap({ counts, weeks = 12 }: Props) {
     for (let d = 0; d < 7; d++) {
       const date = new Date(start);
       date.setDate(start.getDate() + w * 7 + d);
-      const iso = date.toISOString().slice(0, 10);
+      const key = localDateKey(date.getTime());
       cells.push({
-        date: iso,
-        count: counts[iso] ?? 0,
+        date: key,
+        count: counts[key] ?? 0,
         future: date.getTime() > today.getTime(),
       });
     }
