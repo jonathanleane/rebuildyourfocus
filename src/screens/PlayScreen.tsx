@@ -173,7 +173,7 @@ export default function PlayScreen({ player, blockNumber, onBlockComplete, onQui
               transition: 'color 120ms ease',
             }}
           >
-            {countdown === 'ready' ? 'Ready' : countdown === 'set' ? 'Set' : 'Go!'}
+            {countdown === 'ready' ? 'Ready' : countdown === 'set' ? 'Set' : 'Go'}
           </div>
         )}
         {isPaused && (

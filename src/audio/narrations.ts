@@ -7,7 +7,7 @@ export const NARRATIONS = {
   'practice-intro': "Now let's try one-back. Tap when the current trial matches the previous one.",
   ready: 'Ready.',
   set: 'Set.',
-  go: 'Go!',
+  go: 'Go.',
 } as const;
 
 export type NarrationId = keyof typeof NARRATIONS;

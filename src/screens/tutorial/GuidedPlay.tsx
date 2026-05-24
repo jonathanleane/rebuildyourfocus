@@ -196,7 +196,7 @@ export default function GuidedPlay({ voice, onDone, onQuit }: Props) {
               color: countdown === 'go' ? 'var(--accent)' : 'var(--fg)',
             }}
           >
-            {countdown === 'ready' ? 'Ready' : countdown === 'set' ? 'Set' : 'Go!'}
+            {countdown === 'ready' ? 'Ready' : countdown === 'set' ? 'Set' : 'Go'}
           </div>
         )}
       </div>
