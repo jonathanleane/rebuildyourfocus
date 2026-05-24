@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import Layout from './components/Layout';
+import LandingScreen from './screens/LandingScreen';
 import MenuScreen from './screens/MenuScreen';
 import PlayScreen from './screens/PlayScreen';
 import ResultScreen from './screens/ResultScreen';
@@ -12,6 +13,7 @@ import { usePlayerState } from './state/usePlayerState';
 import type { BlockResult, SessionResult } from './engine/types';
 
 type Screen =
+  | { name: 'landing' }
   | { name: 'menu' }
   | { name: 'play' }
   | { name: 'result'; result: BlockResult; blocksLeft: number; level: number }
@@ -29,11 +31,7 @@ interface Session {
 
 export default function App() {
   const player = usePlayerState();
-  const [screen, setScreen] = useState<Screen>(() =>
-    !player.state.player.hasSeenTutorial && player.state.history.length === 0
-      ? { name: 'tutorial' }
-      : { name: 'menu' },
-  );
+  const [screen, setScreen] = useState<Screen>(() => ({ name: 'landing' }));
   const [session, setSession] = useState<Session | null>(null);
   // When a session finishes (naturally or early), we stash its SessionResult here
   // so the SessionComplete screen has access to it after the per-block Result.
@@ -134,13 +132,27 @@ export default function App() {
     setScreen({ name: 'menu' });
   }, []);
 
+  const backToLanding = useCallback(() => {
+    setSession(null);
+    setPendingSummary(null);
+    setScreen({ name: 'landing' });
+  }, []);
+
+  const enterDualNBack = useCallback(() => {
+    const firstTime = !player.state.player.hasSeenTutorial && player.state.history.length === 0;
+    setScreen(firstTime ? { name: 'tutorial' } : { name: 'menu' });
+  }, [player.state.player.hasSeenTutorial, player.state.history.length]);
+
   return (
     <Layout>
+      {screen.name === 'landing' && (
+        <LandingScreen onPlayDualNBack={enterDualNBack} />
+      )}
       {screen.name === 'tutorial' && (
         <TutorialScreen onFinish={finishTutorial} />
       )}
       {screen.name === 'menu' && (
-        <MenuScreen player={player} onStart={startSession} onStats={showStats} onSettings={showSettings} />
+        <MenuScreen player={player} onStart={startSession} onStats={showStats} onSettings={showSettings} onHome={backToLanding} />
       )}
       {screen.name === 'play' && session && (
         <PlayScreen

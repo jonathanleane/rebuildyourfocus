@@ -8,13 +8,20 @@ interface Props {
   onStart: () => void;
   onStats: () => void;
   onSettings: () => void;
+  onHome: () => void;
 }
 
-export default function MenuScreen({ player, onStart, onStats, onSettings }: Props) {
+export default function MenuScreen({ player, onStart, onStats, onSettings, onHome }: Props) {
   const { player: p, settings: s } = player.state;
   return (
     <>
-      <header style={{ marginTop: 16 }}>
+      <button
+        onClick={onHome}
+        style={{ color: 'var(--fg-dim)', fontSize: '0.85rem', alignSelf: 'flex-start', marginBottom: 4 }}
+      >
+        ‹ All games
+      </button>
+      <header style={{ marginTop: 4 }}>
         <div style={{ fontSize: '1.8rem', fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.1 }}>N-Back</div>
         <div style={{ fontSize: '0.85rem', color: 'var(--fg-dim)', marginBottom: 16 }}>Challenge</div>
         <div
@@ -51,6 +58,18 @@ export default function MenuScreen({ player, onStart, onStats, onSettings }: Pro
           <BigButton onClick={onStats}>Stats</BigButton>
           <BigButton onClick={onSettings}>Settings</BigButton>
         </div>
+      </div>
+
+      <div style={{ marginTop: 16, textAlign: 'center', fontSize: '0.72rem', color: 'var(--fg-dim)' }}>
+        Free &amp; open source ·{' '}
+        <a
+          href="https://github.com/jonathanleane/rebuildyourfocus/tree/main/apps/dual-n-back"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: 'var(--accent)' }}
+        >
+          source on GitHub
+        </a>
       </div>
     </>
   );
