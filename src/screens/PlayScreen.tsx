@@ -3,6 +3,7 @@ import Grid from '../components/Grid';
 import BigButton from '../components/BigButton';
 import { useGameEngine } from '../state/useGameEngine';
 import { createAudioPlayer, type AudioPlayer } from '../audio';
+import { narrate } from '../audio/narrations';
 import type { UsePlayerState } from '../state/usePlayerState';
 import type { BlockResult } from '../engine/types';
 import { applyOutcome } from '../engine/scoring';
@@ -50,15 +51,27 @@ export default function PlayScreen({ player, blockNumber, onBlockComplete, onQui
 
   useEffect(() => {
     if (!audio) return;
+    const handles = [
+      narrate('ready', settings.voice),
+    ];
     const timers = [
-      setTimeout(() => setCountdown('set'), 700),
-      setTimeout(() => setCountdown('go'), 1400),
+      setTimeout(() => {
+        setCountdown('set');
+        handles.push(narrate('set', settings.voice));
+      }, 700),
+      setTimeout(() => {
+        setCountdown('go');
+        handles.push(narrate('go', settings.voice));
+      }, 1400),
       setTimeout(() => {
         setCountdown(null);
         engine.startBlock(settings.nBackLevel);
       }, 2100),
     ];
-    return () => timers.forEach(clearTimeout);
+    return () => {
+      timers.forEach(clearTimeout);
+      handles.forEach((h) => h.cancel());
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [audio]);
 

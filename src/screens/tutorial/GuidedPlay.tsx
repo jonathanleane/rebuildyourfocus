@@ -3,7 +3,7 @@ import Grid from '../../components/Grid';
 import BigButton from '../../components/BigButton';
 import { useGameEngine } from '../../state/useGameEngine';
 import { createAudioPlayer, type AudioPlayer } from '../../audio';
-import { narrate } from '../../audio/narrations';
+import { narrate, type NarrationHandle } from '../../audio/narrations';
 import type { VoiceId } from '../../engine/types';
 
 interface Props {
@@ -49,15 +49,30 @@ export default function GuidedPlay({ voice, onDone, onQuit }: Props) {
   useEffect(() => {
     if (!audio) return;
     let cancelled = false;
-    const narration = narrate('practice-intro', voice);
+    const handles: NarrationHandle[] = [];
+    const intro = narrate('practice-intro', voice);
+    handles.push(intro);
     const timers: ReturnType<typeof setTimeout>[] = [];
 
     setCountdown('ready');
-    narration.done.then(() => {
+    intro.done.then(() => {
       if (cancelled) return;
-      // After narration finishes, run Ready/Set/Go and start the block.
-      timers.push(setTimeout(() => !cancelled && setCountdown('set'), 700));
-      timers.push(setTimeout(() => !cancelled && setCountdown('go'), 1400));
+      // After narration finishes, run Ready/Set/Go (audio + visual) and start the block.
+      handles.push(narrate('ready', voice));
+      timers.push(
+        setTimeout(() => {
+          if (cancelled) return;
+          setCountdown('set');
+          handles.push(narrate('set', voice));
+        }, 700),
+      );
+      timers.push(
+        setTimeout(() => {
+          if (cancelled) return;
+          setCountdown('go');
+          handles.push(narrate('go', voice));
+        }, 1400),
+      );
       timers.push(
         setTimeout(() => {
           if (cancelled) return;
@@ -72,7 +87,7 @@ export default function GuidedPlay({ voice, onDone, onQuit }: Props) {
 
     return () => {
       cancelled = true;
-      narration.cancel();
+      handles.forEach((h) => h.cancel());
       timers.forEach(clearTimeout);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps

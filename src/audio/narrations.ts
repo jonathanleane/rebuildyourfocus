@@ -5,6 +5,9 @@ export const NARRATIONS = {
   'concept-4': 'Nothing matches here. You would tap nothing.',
   'concept-5': 'The letter is the same as two trials back. That is a match. You would tap Sound.',
   'practice-intro': "Now let's try one-back. Tap when the current trial matches the previous one.",
+  ready: 'Ready.',
+  set: 'Set.',
+  go: 'Go!',
 } as const;
 
 export type NarrationId = keyof typeof NARRATIONS;
