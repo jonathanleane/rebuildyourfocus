@@ -11,8 +11,7 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "generate:audio": "tsx scripts/generate-audio.ts",
-    "generate:narrations": "tsx scripts/generate-narrations.ts",
-    "generate:variants": "tsx scripts/generate-variants.ts"
+    "generate:narrations": "tsx scripts/generate-narrations.ts"
   },
   "dependencies": {
     "react": "^18.3.1",
