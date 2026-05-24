@@ -13,7 +13,7 @@ import { generateBlock, type BlockGenOptions } from '../engine/blockGenerator';
 import { applyOutcome, computeOutcome, scoreBlock } from '../engine/scoring';
 import type { AudioPlayer } from '../audio/AudioPlayer';
 
-type Mode = 'idle' | 'stimulus' | 'response' | 'blockDone';
+type Mode = 'idle' | 'stimulus' | 'response' | 'paused' | 'blockDone';
 
 interface EngineState {
   mode: Mode;
@@ -22,6 +22,8 @@ interface EngineState {
   responses: UserResponse[];
   trialIndex: number;
   lastResult: BlockResult | null;
+  /** Bumped by resume() to force the trial-scheduling effect to re-run for the same trialIndex. */
+  restartToken: number;
 }
 
 type Action =
@@ -31,6 +33,8 @@ type Action =
   | { type: 'tapPosition' }
   | { type: 'tapSound' }
   | { type: 'finishBlock'; result: BlockResult }
+  | { type: 'pause' }
+  | { type: 'resume' }
   | { type: 'reset' };
 
 const initial: EngineState = {
@@ -40,6 +44,7 @@ const initial: EngineState = {
   responses: [],
   trialIndex: -1,
   lastResult: null,
+  restartToken: 0,
 };
 
 function reducer(s: EngineState, a: Action): EngineState {
@@ -52,6 +57,7 @@ function reducer(s: EngineState, a: Action): EngineState {
         responses: a.trials.map(() => ({ position: false, letter: false })),
         trialIndex: 0,
         lastResult: null,
+        restartToken: s.restartToken + 1,
       };
     case 'enterResponse':
       return { ...s, mode: 'response' };
@@ -74,6 +80,17 @@ function reducer(s: EngineState, a: Action): EngineState {
     }
     case 'finishBlock':
       return { ...s, mode: 'blockDone', lastResult: a.result };
+    case 'pause': {
+      if (s.mode !== 'stimulus' && s.mode !== 'response') return s;
+      // Discard the current trial's response — we're going to re-show this trial on resume.
+      // Otherwise a partial response captured before pause would carry into the replayed trial.
+      const responses = s.responses.slice();
+      responses[s.trialIndex] = { position: false, letter: false };
+      return { ...s, mode: 'paused', responses };
+    }
+    case 'resume':
+      if (s.mode !== 'paused') return s;
+      return { ...s, mode: 'stimulus', restartToken: s.restartToken + 1 };
     case 'reset':
       return initial;
   }
@@ -91,6 +108,8 @@ export interface UseGameEngine {
   trials: Trial[];
   tapPosition: () => void;
   tapSound: () => void;
+  pause: () => void;
+  resume: () => void;
   reset: () => void;
 }
 
@@ -149,8 +168,9 @@ export function useGameEngine(opts: GameEngineOptions): UseGameEngine {
 
     timers.current.push(enterResponse, advance);
     return clearTimers;
+    // restartToken is bumped by start() and resume() to force this to re-fire for the same trialIndex
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.trialIndex]);
+  }, [state.trialIndex, state.restartToken]);
 
   useEffect(() => () => clearTimers(), [clearTimers]);
 
@@ -165,6 +185,13 @@ export function useGameEngine(opts: GameEngineOptions): UseGameEngine {
 
   const tapPosition = useCallback(() => dispatch({ type: 'tapPosition' }), []);
   const tapSound = useCallback(() => dispatch({ type: 'tapSound' }), []);
+  const pause = useCallback(() => {
+    clearTimers();
+    dispatch({ type: 'pause' });
+  }, [clearTimers]);
+  const resume = useCallback(() => {
+    dispatch({ type: 'resume' });
+  }, []);
   const reset = useCallback(() => {
     clearTimers();
     dispatch({ type: 'reset' });
@@ -185,9 +212,11 @@ export function useGameEngine(opts: GameEngineOptions): UseGameEngine {
       startBlock,
       tapPosition,
       tapSound,
+      pause,
+      resume,
       reset,
     }),
-    [state, startBlock, tapPosition, tapSound, reset],
+    [state, startBlock, tapPosition, tapSound, pause, resume, reset],
   );
 }
 

@@ -90,8 +90,8 @@ export default function SettingsScreen({ player, onBack, onReplayTutorial, onSho
         </select>
       </Row>
 
-      <div style={{ fontSize: '0.7rem', color: 'var(--fg-dim)', textAlign: 'center', marginTop: 8 }}>
-        Keyboard: <b>A</b> or <b>←</b> for Position · <b>L</b> or <b>→</b> for Sound
+      <div style={{ fontSize: '0.7rem', color: 'var(--fg-dim)', textAlign: 'center', marginTop: 8, lineHeight: 1.6 }}>
+        Keyboard: <b>A</b> or <b>←</b> for Position · <b>L</b> or <b>→</b> for Sound · <b>Esc</b> to pause
       </div>
 
       <div style={{ marginTop: 16, display: 'flex', gap: 16, flexWrap: 'wrap' }}>

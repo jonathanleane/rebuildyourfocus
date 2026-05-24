@@ -91,9 +91,21 @@ export default function PlayScreen({ player, blockNumber, onBlockComplete, onQui
     engine.tapSound();
   }, [engine.tapSound, sndLocked]);
 
+  const isPaused = engine.mode === 'paused';
+  const togglePause = useCallback(() => {
+    if (isPaused) engine.resume();
+    else engine.pause();
+  }, [engine.pause, engine.resume, isPaused]);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.repeat) return;
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        togglePause();
+        return;
+      }
+      if (isPaused) return;
       if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') {
         e.preventDefault();
         tapPos();
@@ -104,7 +116,7 @@ export default function PlayScreen({ player, blockNumber, onBlockComplete, onQui
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [tapPos, tapSnd]);
+  }, [tapPos, tapSnd, togglePause, isPaused]);
 
   const litIndex = useMemo(
     () => (engine.showStimulus && engine.currentTrial ? engine.currentTrial.position : null),
@@ -126,7 +138,19 @@ export default function PlayScreen({ player, blockNumber, onBlockComplete, onQui
             Block {blockNumber}/{settings.blocksPerSession} · Trial {engine.trialIndex >= 0 ? engine.trialIndex + 1 : 0}/{engine.totalTrials}
           </div>
         </div>
-        <div style={{ width: 48 }} />
+        <button
+          onClick={togglePause}
+          aria-label={isPaused ? 'Resume' : 'Pause'}
+          title={isPaused ? 'Resume (Esc)' : 'Pause (Esc)'}
+          style={{
+            color: 'var(--fg-dim)',
+            fontSize: '0.85rem',
+            width: 48,
+            textAlign: 'right',
+          }}
+        >
+          {isPaused ? 'Resume' : 'Pause'}
+        </button>
       </div>
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative' }}>
@@ -149,6 +173,41 @@ export default function PlayScreen({ player, blockNumber, onBlockComplete, onQui
             }}
           >
             {countdown === 'ready' ? 'Ready' : countdown === 'set' ? 'Set' : 'Go!'}
+          </div>
+        )}
+        {isPaused && (
+          <div
+            role="status"
+            aria-live="polite"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'var(--bg)',
+              gap: 16,
+            }}
+          >
+            <div style={{ fontSize: '2.4rem', fontWeight: 700, letterSpacing: '-0.02em' }}>Paused</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--fg-dim)', textAlign: 'center', maxWidth: '28ch', lineHeight: 1.4 }}>
+              The current trial will replay when you resume. Press <b>Esc</b> or the button above.
+            </div>
+            <button
+              onClick={togglePause}
+              style={{
+                background: 'var(--accent)',
+                color: 'var(--accent-fg)',
+                borderRadius: 999,
+                padding: '12px 24px',
+                fontSize: '0.95rem',
+                fontWeight: 600,
+                marginTop: 8,
+              }}
+            >
+              Resume
+            </button>
           </div>
         )}
       </div>
