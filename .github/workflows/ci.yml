@@ -15,7 +15,10 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-      - run: npm ci
+      # npm install instead of npm ci to work around npm bug 4828
+      # (optional rollup native deps not installed cross-platform from a
+      # lock file generated on a different OS).
+      - run: npm install --no-audit --no-fund
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
