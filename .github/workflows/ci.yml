@@ -15,9 +15,11 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-      # npm install instead of npm ci to work around npm bug 4828
-      # (optional rollup native deps not installed cross-platform from a
-      # lock file generated on a different OS).
+      # Delete the lock file before install: npm bug 4828 prevents the
+      # optional @rollup/rollup-linux-x64-gnu binary from being installed
+      # from a lock file generated on macOS arm64. Fresh resolve picks
+      # the right native binary for the runner's platform.
+      - run: rm -f package-lock.json apps/dual-n-back/package-lock.json
       - run: npm install --no-audit --no-fund
       - run: npm run typecheck
       - run: npm test
