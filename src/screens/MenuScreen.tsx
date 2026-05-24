@@ -1,4 +1,3 @@
-import ProgressRing from '../components/ProgressRing';
 import BigButton from '../components/BigButton';
 import DemoGrid from '../components/DemoGrid';
 import type { UsePlayerState } from '../state/usePlayerState';
@@ -15,32 +14,38 @@ export default function MenuScreen({ player, onStart, onStats, onSettings }: Pro
   const { player: p, settings: s } = player.state;
   return (
     <>
-      <div style={{ fontSize: '1.8rem', fontWeight: 700, letterSpacing: '-0.02em', marginTop: 16 }}>N-Back</div>
-      <div style={{ fontSize: '0.85rem', color: 'var(--fg-dim)', marginBottom: 20 }}>Challenge</div>
+      <header style={{ marginTop: 16 }}>
+        <div style={{ fontSize: '1.8rem', fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.1 }}>N-Back</div>
+        <div style={{ fontSize: '0.85rem', color: 'var(--fg-dim)', marginBottom: 16 }}>Challenge</div>
+        <div
+          style={{
+            display: 'flex',
+            gap: 8,
+            flexWrap: 'wrap',
+            fontSize: '0.72rem',
+            fontWeight: 600,
+            color: 'var(--fg-dim)',
+          }}
+        >
+          <Badge>🔥 {p.currentStreak}d streak</Badge>
+          <Badge>{p.totalSessionsCompleted}/{CHALLENGE_TARGET} sessions</Badge>
+          <Badge accent>{s.nBackLevel}-back · {s.blocksPerSession} blocks</Badge>
+        </div>
+      </header>
 
       <div
         style={{
-          alignSelf: 'flex-start',
-          background: 'var(--surface)',
-          border: '1px solid var(--border)',
-          borderRadius: 999,
-          padding: '6px 12px',
-          fontSize: '0.75rem',
-          fontWeight: 600,
-          marginBottom: 16,
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '12px 0',
         }}
       >
-        🔥 {p.currentStreak} day streak
+        <DemoGrid />
       </div>
 
-      <ProgressRing value={p.totalSessionsCompleted} max={CHALLENGE_TARGET} label="Sessions" />
-
-      <DemoGrid />
-
-      <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <div style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--fg-dim)' }}>
-          Starting at <b style={{ color: 'var(--fg)' }}>{s.nBackLevel}-back</b> · {s.blocksPerSession} blocks
-        </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <BigButton primary onClick={onStart}>Start Session</BigButton>
         <div style={{ display: 'flex', gap: 12 }}>
           <BigButton onClick={onStats}>Stats</BigButton>
@@ -48,5 +53,22 @@ export default function MenuScreen({ player, onStart, onStats, onSettings }: Pro
         </div>
       </div>
     </>
+  );
+}
+
+function Badge({ children, accent }: { children: React.ReactNode; accent?: boolean }) {
+  return (
+    <span
+      style={{
+        background: accent ? 'var(--fg)' : 'var(--surface)',
+        color: accent ? 'var(--bg)' : 'var(--fg)',
+        border: '1px solid var(--border)',
+        borderRadius: 999,
+        padding: '5px 10px',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {children}
+    </span>
   );
 }
