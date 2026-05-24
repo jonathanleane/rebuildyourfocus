@@ -43,7 +43,7 @@ export interface SessionResult {
 
 export type ThemeId = 'mono' | 'indigo' | 'forest' | 'amber' | 'light';
 export type AudioSource = 'auto' | 'mp3' | 'speech';
-export type VoiceId = 'alice' | 'sarah' | 'liam' | 'daniel' | 'charlie';
+export type VoiceId = 'alice' | 'sarah' | 'liam' | 'daniel';
 
 export interface Settings {
   nBackLevel: number;

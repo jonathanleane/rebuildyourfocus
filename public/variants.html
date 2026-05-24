@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Voice / letter variants</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+      background: #f7f6f3; color: #1a1a1a;
+      padding: 32px 20px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 760px; margin: 0 auto; }
+    h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
+    .sub { color: #7a7a7a; font-size: 0.9rem; margin-bottom: 24px; line-height: 1.5; }
+    .voice-block {
+      margin: 24px 0;
+      padding: 16px;
+      background: rgba(0,0,0,0.04);
+      border-radius: 12px;
+    }
+    .voice-block h2 { font-size: 1.15rem; font-weight: 700; }
+    .letter-block { margin-top: 12px; }
+    .letter-block h3 {
+      font-size: 0.85rem; font-weight: 700;
+      margin: 8px 0 6px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 220px 1fr auto auto;
+      gap: 10px;
+      align-items: center;
+      padding: 8px 10px;
+      background: white;
+      border-radius: 8px;
+      margin-bottom: 4px;
+    }
+    .id { font-family: ui-monospace, Menlo, monospace; font-size: 0.78rem; }
+    .note { font-size: 0.68rem; color: #7a7a7a; }
+    .prompt { font-family: ui-monospace, Menlo, monospace; font-size: 0.85rem; }
+    .meta { display: flex; flex-direction: column; gap: 1px; }
+    .size { font-size: 0.7rem; color: #7a7a7a; font-variant-numeric: tabular-nums; }
+    button {
+      background: #1a1a1a; color: white; border: none;
+      border-radius: 999px; padding: 6px 14px;
+      font: inherit; font-size: 0.8rem; font-weight: 600; cursor: pointer;
+    }
+    button:hover { opacity: 0.85; }
+    button.playing { background: #34c759; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Voice / letter variants</h1>
+    <div class="sub">Pick a winner for each (voice, letter) and tell Claude (e.g. <code>sarah/H = 02, liam/H = 04, daniel/C = 01, daniel/H = 06</code>).</div>
+    <div id="content">Loading…</div>
+  </div>
+  <script type="module">
+    const res = await fetch('/audio/variants/manifest.json');
+    const data = await res.json();
+    const root = document.getElementById('content');
+    root.innerHTML = '';
+    let current = null, currentBtn = null;
+    const play = (url, btn) => {
+      if (current) {
+        current.pause();
+        if (currentBtn) { currentBtn.classList.remove('playing'); currentBtn.textContent = '▶ Play'; }
+      }
+      const a = new Audio(url);
+      current = a; currentBtn = btn;
+      btn.classList.add('playing'); btn.textContent = '◼ Stop';
+      a.onended = () => { btn.classList.remove('playing'); btn.textContent = '▶ Play'; };
+      a.play();
+    };
+    const fetchSize = (url, el) => {
+      fetch(url, { method: 'HEAD' }).then((r) => {
+        const len = r.headers.get('content-length');
+        if (len) el.textContent = `${(parseInt(len) / 1024).toFixed(1)} KB`;
+      });
+    };
+    for (const voice of data.voices) {
+      const v = document.createElement('div');
+      v.className = 'voice-block';
+      v.innerHTML = `<h2>${voice.name}</h2>`;
+      for (const lt of voice.letters) {
+        const lb = document.createElement('div');
+        lb.className = 'letter-block';
+        lb.innerHTML = `<h3>Letter ${lt.letter}</h3>`;
+        for (const t of lt.takes) {
+          const url = `/audio/variants/${voice.slug}/${lt.letter}/${t.id}.mp3`;
+          const row = document.createElement('div');
+          row.className = 'row';
+          row.innerHTML = `
+            <div class="meta">
+              <div class="id">${t.id}</div>
+              <div class="note">${t.note} · stab ${t.stability}</div>
+            </div>
+            <div class="prompt">${JSON.stringify(t.text)}</div>
+            <div class="size">…</div>
+            <button>▶ Play</button>
+          `;
+          const btn = row.querySelector('button');
+          btn.addEventListener('click', () => play(url, btn));
+          fetchSize(url, row.querySelector('.size'));
+          lb.appendChild(row);
+        }
+        v.appendChild(lb);
+      }
+      root.appendChild(v);
+    }
+  </script>
+</body>
+</html>

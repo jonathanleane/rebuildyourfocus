@@ -15,7 +15,6 @@ export const VOICES: readonly Voice[] = [
   { id: 'sarah', name: 'Sarah', accent: 'US', gender: 'F', elevenLabsId: 'EXAVITQu4vr4xnSDxMaL' },
   { id: 'liam', name: 'Liam', accent: 'US', gender: 'M', elevenLabsId: 'TX3LPaxmHKxFdv7VOQHJ' },
   { id: 'daniel', name: 'Daniel', accent: 'UK', gender: 'M', elevenLabsId: 'onwK4e9ZLuTAKqWW03F9' },
-  { id: 'charlie', name: 'Charlie', accent: 'AU', gender: 'M', elevenLabsId: 'IKne3meq5aSn9XLyUdCD' },
 ];
 
 export const DEFAULT_VOICE: VoiceId = 'alice';
