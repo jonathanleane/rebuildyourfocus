@@ -1,7 +1,22 @@
 [
   {
-    "id": "current",
+    "id": "01-bare",
+    "text": "Q",
+    "file": "01-bare.mp3"
+  },
+  {
+    "id": "02-bare-period",
+    "text": "Q.",
+    "file": "02-bare-period.mp3"
+  },
+  {
+    "id": "04-Cue",
     "text": "Cue.",
-    "file": "current.mp3"
+    "file": "04-Cue.mp3"
+  },
+  {
+    "id": "05-Queue",
+    "text": "Queue.",
+    "file": "05-Queue.mp3"
   }
 ]
