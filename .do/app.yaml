@@ -1,0 +1,18 @@
+name: rebuildyourfocus
+region: syd
+static_sites:
+  - name: web
+    source_dir: /
+    github:
+      repo: jonathanleane/rebuildyourfocus
+      branch: main
+      deploy_on_push: true
+    # Delete the lock file before install to dodge npm bug 4828
+    # (optional rollup native deps not installed cross-platform from
+    # a lock file generated on a different OS).
+    build_command: rm -f package-lock.json && npm install --no-audit --no-fund && npm -w dual-n-back run build
+    output_dir: apps/dual-n-back/dist
+    environment_slug: node-js
+    catchall_document: index.html
+    routes:
+      - path: /
