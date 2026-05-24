@@ -1,112 +1,74 @@
-import { useState } from 'react';
 import BigButton from '../components/BigButton';
-import type { UsePlayerState } from '../state/usePlayerState';
-import ConceptDemo from './tutorial/ConceptDemo';
-import GuidedPlay from './tutorial/GuidedPlay';
-
-type Step = 'welcome' | 'concept' | 'practice' | 'done';
 
 interface Props {
-  player: UsePlayerState;
   onFinish: () => void;
-  onSkip: () => void;
 }
 
-export default function TutorialScreen({ player, onFinish, onSkip }: Props) {
-  const [step, setStep] = useState<Step>('welcome');
-  const [practiceScore, setPracticeScore] = useState<{ pos: number; let: number } | null>(null);
-
-  if (step === 'welcome') {
-    return (
-      <>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingBottom: 24 }}>
-          <div style={{ fontSize: '1.6rem', fontWeight: 700, marginBottom: 16 }}>Welcome.</div>
-          <p style={{ fontSize: '0.95rem', lineHeight: 1.6, color: 'var(--fg-dim)' }}>
-            Dual n-back trains working memory. It's based on a peer-reviewed paradigm
-            (<a
-              href="https://www.pnas.org/doi/10.1073/pnas.0801268105"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: 'var(--accent)' }}
-            >
-              Jaeggi 2008
-            </a>).
-          </p>
-          <p style={{ fontSize: '0.95rem', lineHeight: 1.6, color: 'var(--fg-dim)', marginTop: 12 }}>
-            Sessions are about 10 minutes. The task is deliberately uncomfortable —
-            that's how you know it's working. You'll feel lost at first. Stick with it.
-          </p>
-          <p style={{ fontSize: '0.95rem', lineHeight: 1.6, color: 'var(--fg-dim)', marginTop: 12 }}>
-            This walkthrough takes ~2 minutes.
-          </p>
-          <div
-            role="note"
-            style={{
-              marginTop: 20,
-              padding: '10px 14px',
-              borderRadius: 10,
-              background: 'var(--surface)',
-              border: '1px solid var(--border)',
-              fontSize: '0.85rem',
-              color: 'var(--fg)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-            }}
-          >
-            <span aria-hidden style={{ fontSize: '1.1rem' }}>🔊</span>
-            <span>
-              Make sure your sound is <b>on</b>. The game and tutorial both rely on audio.
-            </span>
-          </div>
-        </div>
-        <div style={{ display: 'flex', gap: 12 }}>
-          <BigButton onClick={onSkip}>Skip — I know the rules</BigButton>
-          <BigButton primary onClick={() => setStep('concept')}>Show me</BigButton>
-        </div>
-      </>
-    );
-  }
-
-  if (step === 'concept') {
-    return <ConceptDemo voice={player.state.settings.voice} onDone={() => setStep('practice')} />;
-  }
-
-  if (step === 'practice') {
-    return (
-      <GuidedPlay
-        voice={player.state.settings.voice}
-        onDone={(pos, let_) => {
-          setPracticeScore({ pos, let: let_ });
-          setStep('done');
-        }}
-        onQuit={() => setStep('done')}
-      />
-    );
-  }
-
-  // done
-  const avg = practiceScore ? (practiceScore.pos + practiceScore.let) / 2 : null;
+export default function TutorialScreen({ onFinish }: Props) {
   return (
     <>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingBottom: 24 }}>
-        <div style={{ fontSize: '1.6rem', fontWeight: 700, marginBottom: 16 }}>You've got it.</div>
-        {avg !== null && (
-          <div style={{ fontSize: '0.85rem', color: 'var(--fg-dim)', marginBottom: 16 }}>
-            Practice score: Position {Math.round(practiceScore!.pos * 100)}% · Sound{' '}
-            {Math.round(practiceScore!.let * 100)}%
-          </div>
-        )}
-        <p style={{ fontSize: '0.95rem', lineHeight: 1.6, color: 'var(--fg-dim)' }}>
-          The real game starts at <b style={{ color: 'var(--fg)' }}>2-back</b> — you'll compare each trial to
-          <i> two </i>back instead of one. That's the jump where everyone feels overwhelmed
-          for the first session or two.
-        </p>
-        <p style={{ fontSize: '0.95rem', lineHeight: 1.6, color: 'var(--fg-dim)', marginTop: 12 }}>
-          Expect 40–60% accuracy your first session. That's normal. It passes.
-        </p>
+      <div
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          paddingBottom: 24,
+        }}
+      >
+        <div style={{ fontSize: '1.6rem', fontWeight: 700, marginBottom: 8, letterSpacing: '-0.02em' }}>
+          How dual n-back works
+        </div>
+        <div style={{ fontSize: '0.85rem', color: 'var(--fg-dim)', marginBottom: 24 }}>
+          Based on the{' '}
+          <a
+            href="https://www.pnas.org/doi/10.1073/pnas.0801268105"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: 'var(--accent)' }}
+          >
+            Jaeggi 2008 paradigm
+          </a>.
+        </div>
+
+        <ul style={{ paddingLeft: 20, marginBottom: 20, fontSize: '0.95rem', lineHeight: 1.6, color: 'var(--fg)' }}>
+          <li>Each trial: one of nine squares lights up and a letter plays.</li>
+          <li style={{ marginTop: 6 }}>
+            Tap <b>Position</b> when the lit square matches the one from{' '}
+            <b>N&nbsp;trials ago</b>.
+          </li>
+          <li style={{ marginTop: 6 }}>
+            Tap <b>Sound</b> when the letter matches the one from <b>N&nbsp;trials ago</b>.
+          </li>
+          <li style={{ marginTop: 6 }}>Either, both, or neither can match. Tap nothing if neither matches.</li>
+        </ul>
+
+        <div
+          role="note"
+          style={{
+            padding: '12px 14px',
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            borderRadius: 10,
+            fontSize: '0.85rem',
+            color: 'var(--fg)',
+            lineHeight: 1.5,
+            marginBottom: 16,
+          }}
+        >
+          <b>Your first session will feel impossible.</b> ~50% accuracy is normal. The
+          paradigm is unpleasant by design — that's how you know it's working. Stick with it.
+        </div>
+
+        <div style={{ fontSize: '0.75rem', color: 'var(--fg-dim)', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span aria-hidden>🔊</span>
+          <span>Sound is required. Check your volume.</span>
+        </div>
       </div>
-      <BigButton primary onClick={onFinish}>Start training</BigButton>
+
+      <div style={{ display: 'flex' }}>
+        <BigButton primary onClick={onFinish}>Got it, let's play</BigButton>
+      </div>
     </>
   );
 }

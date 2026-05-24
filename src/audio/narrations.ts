@@ -1,10 +1,4 @@
 export const NARRATIONS = {
-  'concept-1': 'Each trial, a square lights up and a letter plays.',
-  'concept-2': 'Watch the position. Listen to the letter.',
-  'concept-3': 'The position is the same as two trials back. That is a match. You would tap Position.',
-  'concept-4': 'Nothing matches here. You would tap nothing.',
-  'concept-5': 'The letter is the same as two trials back. That is a match. You would tap Sound.',
-  'practice-intro': "Now let's try one-back. Tap when the current trial matches the previous one.",
   ready: 'Ready.',
   set: 'Set.',
   go: 'Go.',

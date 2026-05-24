@@ -137,7 +137,7 @@ export default function App() {
   return (
     <Layout>
       {screen.name === 'tutorial' && (
-        <TutorialScreen player={player} onFinish={finishTutorial} onSkip={finishTutorial} />
+        <TutorialScreen onFinish={finishTutorial} />
       )}
       {screen.name === 'menu' && (
         <MenuScreen player={player} onStart={startSession} onStats={showStats} onSettings={showSettings} />
