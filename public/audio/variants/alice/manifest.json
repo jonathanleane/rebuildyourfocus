@@ -88,19 +88,9 @@
       "letter": "K",
       "variants": [
         {
-          "id": "01-bare",
-          "text": "K",
-          "url": "/audio/variants/alice/K/01-bare.mp3"
-        },
-        {
-          "id": "02-bare-period",
-          "text": "K.",
-          "url": "/audio/variants/alice/K/02-bare-period.mp3"
-        },
-        {
-          "id": "04-Kay",
+          "id": "current",
           "text": "Kay.",
-          "url": "/audio/variants/alice/K/04-Kay.mp3"
+          "url": "/audio/variants/alice/K/current.mp3"
         }
       ]
     },
@@ -108,19 +98,9 @@
       "letter": "L",
       "variants": [
         {
-          "id": "01-bare",
-          "text": "L",
-          "url": "/audio/variants/alice/L/01-bare.mp3"
-        },
-        {
-          "id": "02-bare-period",
-          "text": "L.",
-          "url": "/audio/variants/alice/L/02-bare-period.mp3"
-        },
-        {
-          "id": "04-Ell",
+          "id": "current",
           "text": "Ell.",
-          "url": "/audio/variants/alice/L/04-Ell.mp3"
+          "url": "/audio/variants/alice/L/current.mp3"
         }
       ]
     },
@@ -128,24 +108,9 @@
       "letter": "Q",
       "variants": [
         {
-          "id": "01-bare",
-          "text": "Q",
-          "url": "/audio/variants/alice/Q/01-bare.mp3"
-        },
-        {
-          "id": "02-bare-period",
-          "text": "Q.",
-          "url": "/audio/variants/alice/Q/02-bare-period.mp3"
-        },
-        {
-          "id": "04-Cue",
+          "id": "current",
           "text": "Cue.",
-          "url": "/audio/variants/alice/Q/04-Cue.mp3"
-        },
-        {
-          "id": "05-Queue",
-          "text": "Queue.",
-          "url": "/audio/variants/alice/Q/05-Queue.mp3"
+          "url": "/audio/variants/alice/Q/current.mp3"
         }
       ]
     },
@@ -153,24 +118,9 @@
       "letter": "R",
       "variants": [
         {
-          "id": "01-bare",
-          "text": "R",
-          "url": "/audio/variants/alice/R/01-bare.mp3"
-        },
-        {
-          "id": "02-bare-period",
-          "text": "R.",
-          "url": "/audio/variants/alice/R/02-bare-period.mp3"
-        },
-        {
-          "id": "04-Are",
+          "id": "current",
           "text": "Are.",
-          "url": "/audio/variants/alice/R/04-Are.mp3"
-        },
-        {
-          "id": "05-Arr",
-          "text": "Arr.",
-          "url": "/audio/variants/alice/R/05-Arr.mp3"
+          "url": "/audio/variants/alice/R/current.mp3"
         }
       ]
     },
@@ -178,19 +128,9 @@
       "letter": "S",
       "variants": [
         {
-          "id": "01-bare",
-          "text": "S",
-          "url": "/audio/variants/alice/S/01-bare.mp3"
-        },
-        {
-          "id": "02-bare-period",
-          "text": "S.",
-          "url": "/audio/variants/alice/S/02-bare-period.mp3"
-        },
-        {
-          "id": "04-Ess",
+          "id": "current",
           "text": "Ess.",
-          "url": "/audio/variants/alice/S/04-Ess.mp3"
+          "url": "/audio/variants/alice/S/current.mp3"
         }
       ]
     },
@@ -198,19 +138,9 @@
       "letter": "T",
       "variants": [
         {
-          "id": "01-bare",
-          "text": "T",
-          "url": "/audio/variants/alice/T/01-bare.mp3"
-        },
-        {
-          "id": "02-bare-period",
-          "text": "T.",
-          "url": "/audio/variants/alice/T/02-bare-period.mp3"
-        },
-        {
-          "id": "04-Tee",
+          "id": "current",
           "text": "Tee.",
-          "url": "/audio/variants/alice/T/04-Tee.mp3"
+          "url": "/audio/variants/alice/T/current.mp3"
         }
       ]
     }
