@@ -1,0 +1,15 @@
+{
+  "source": "Wikimedia Commons (English (US) letter pronunciations)",
+  "license": "CC BY-SA 3.0",
+  "attribution": "Files by Wikimedia user 'Twocs' (C, H, L, Q, S, T), 'Neskaya' (K), 'Logictheo' (R)",
+  "letters": [
+    { "letter": "C", "url": "/audio/variants/wikimedia-us/C.mp3", "artist": "Twocs", "license": "CC BY-SA 3.0", "source": "https://commons.wikimedia.org/wiki/File:En-us-c.ogg" },
+    { "letter": "H", "url": "/audio/variants/wikimedia-us/H.mp3", "artist": "Twocs", "license": "CC BY-SA 3.0", "source": "https://commons.wikimedia.org/wiki/File:En-us-h.ogg" },
+    { "letter": "K", "url": "/audio/variants/wikimedia-us/K.mp3", "artist": "Neskaya", "license": "CC BY-SA 3.0", "source": "https://commons.wikimedia.org/wiki/File:En-us-k.ogg" },
+    { "letter": "L", "url": "/audio/variants/wikimedia-us/L.mp3", "artist": "Twocs", "license": "CC BY-SA 3.0", "source": "https://commons.wikimedia.org/wiki/File:En-us-l.ogg" },
+    { "letter": "Q", "url": "/audio/variants/wikimedia-us/Q.mp3", "artist": "Twocs", "license": "CC BY-SA 3.0", "source": "https://commons.wikimedia.org/wiki/File:En-us-q.ogg" },
+    { "letter": "R", "url": "/audio/variants/wikimedia-us/R.mp3", "artist": "Logictheo", "license": "CC BY-SA 3.0", "source": "https://commons.wikimedia.org/wiki/File:En-us-r.ogg" },
+    { "letter": "S", "url": "/audio/variants/wikimedia-us/S.mp3", "artist": "Twocs", "license": "CC BY-SA 3.0", "source": "https://commons.wikimedia.org/wiki/File:En-us-s.ogg" },
+    { "letter": "T", "url": "/audio/variants/wikimedia-us/T.mp3", "artist": "Twocs", "license": "CC BY-SA 3.0", "source": "https://commons.wikimedia.org/wiki/File:En-us-t.ogg" }
+  ]
+}
