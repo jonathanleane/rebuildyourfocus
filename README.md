@@ -1,126 +1,65 @@
-# Dual N-Back
+# Rebuild Your Focus
 
-A browser-based dual n-back working-memory trainer, faithful to the
-[Jaeggi & Buschkuehl 2008](https://www.pnas.org/doi/10.1073/pnas.0801268105)
-paradigm. Built with Vite + React + TypeScript. Runs entirely client-side —
-no accounts, no tracking, no backend.
+A suite of free, open-source brain training games and guides.
 
-> **Why dual n-back?** It's one of the few cognitive training paradigms
-> with peer-reviewed evidence for transfer to fluid intelligence. The
-> protocol is unpleasant by design — that's the whole point. If you can
-> hold the mental queue, it works.
+🔗 **https://rebuildyourfocus.com** *(coming soon)*
 
-## Features
+## Apps
 
-- **Core gameplay** — 3×3 grid + 8 spoken letters, simultaneous position
-  + sound matching.
-- **Jaeggi-faithful protocol** — `N + 20` trials per block, 6 position
-  matches and 6 letter matches, auto level-up at ≥90% / level-down at
-  <75% on both modalities.
-- **20-session challenge** with streak tracking.
-- **5 themes** — Light Paper (default), Mono, Indigo Night, Forest, Amber.
-- **Configurable** — speed 0.5×–5×, manual N-back level (1–14),
-  blocks per session (5–20), instant feedback toggle, auto-progression
-  toggle, audio source select.
-- **Keyboard shortcuts** — `A` for Position, `L` for Sound.
-- **Accessible** — `prefers-reduced-motion` respected; WCAG AA contrast
-  across all themes.
-- **Offline-first** — settings + session history persist in localStorage
-  (capped at 200 sessions).
+| App | Description | Status |
+|---|---|---|
+| [Dual N-Back](./apps/dual-n-back/) | Working-memory trainer following the [Jaeggi 2008](https://www.pnas.org/doi/10.1073/pnas.0801268105) paradigm | ✅ Live |
+| (more coming) | — | — |
 
-## Stack
+## Philosophy
 
-- **Vite + React 18 + TypeScript** (strict mode)
-- **Vitest** for unit tests
-- **Web Audio API** for sample-accurate audio scheduling
-- **ElevenLabs** (optional) for premium letter audio; falls back to
-  `speechSynthesis`
+- **Free, no ads, no tracking** — sessions are stored locally on your device
+- **Open source under MIT** — fork it, host it, contribute back
+- **Evidence-based** — every claim links to the research; see the [literature review](./docs/literature-review.md) for the honest picture (it's contested)
+- **Local-first** — works offline; accounts and cloud sync are deliberately not yet built
 
-## Quickstart
+## Repo structure
+
+This is a npm-workspaces monorepo:
+
+```
+rebuildyourfocus/
+├── apps/                 each game / surface
+│   └── dual-n-back/      first game
+├── packages/             shared code (added when there's something to share)
+├── docs/                 project-wide documentation
+│   ├── literature-review.md
+│   └── superpowers/      design specs + implementation plans
+├── package.json          workspace root
+└── README.md
+```
+
+## Development
 
 ```bash
-git clone https://github.com/jonathanleane/dual-n-back.git
-cd dual-n-back
-npm install
-npm run dev
+git clone https://github.com/jonathanleane/rebuildyourfocus.git
+cd rebuildyourfocus
+npm install                  # installs all workspace deps
+npm run dev                  # runs dual-n-back at http://localhost:5173
 ```
 
-Open <http://localhost:5173/>. The app uses your browser's speech synthesis
-by default — works out of the box.
-
-### Scripts
-
-| Command | What it does |
-|---|---|
-| `npm run dev` | Start the dev server (port 5173) |
-| `npm run build` | Production build to `dist/` |
-| `npm test` | Run the test suite (Vitest) |
-| `npm run test:watch` | Run tests in watch mode |
-| `npm run typecheck` | Type-check without emitting |
-| `npm run generate:audio` | Generate ElevenLabs letter mp3s (requires API key) |
-
-### Premium audio (optional)
-
-The default Web Speech voice varies by browser/OS. For consistent, higher
-quality audio, generate static mp3 assets via ElevenLabs:
+Per-app scripts:
 
 ```bash
-ELEVENLABS_API_KEY=sk-... npm run generate:audio
+npm -w dual-n-back run dev
+npm -w dual-n-back run build
+npm -w dual-n-back run test
+npm -w dual-n-back run typecheck
 ```
 
-This writes 8 small mp3s (~50 KB total) to `public/audio/letters/`. The app
-detects them automatically when `audioSource` is set to `auto` (default) or
-`mp3`.
+## Roadmap
 
-Override the voice with `ELEVENLABS_VOICE_ID=...`.
-
-## Project structure
-
-```
-src/
-  engine/         Pure TS: block generator, scoring, Jaeggi level rule
-  audio/          AudioPlayer interface + Web Audio + speech fallback
-  storage/        Persistence interface + localStorage adapter
-  state/          useGameEngine (run loop) + usePlayerState (persisted state)
-  themes/         5 themes as scoped CSS variable sets
-  components/     Grid, BigButton, ProgressRing, ThresholdBar, etc.
-  screens/        Menu, Play, Result, Stats, Settings
-```
-
-The engine, audio, and storage modules each sit behind a small interface so
-that a future React Native build or a cloud-sync backend can be slotted in
-without touching the UI.
-
-## The science
-
-The dual n-back paradigm presents two simultaneous streams (visual position
-and spoken letter). For each trial, the player decides — separately for each
-modality — whether the current stimulus matches the one presented N trials
-back.
-
-Original studies suggested transfer to fluid intelligence; later
-meta-analyses found the effect smaller and more variable than first
-reported, but the task remains a useful working-memory exercise. See
-[Au et al. 2014 meta-analysis](https://gwern.net/doc/dual-n-back/2014-au.pdf)
-for a measured overview.
-
-This implementation follows the Jaeggi 2008 protocol exactly (6+6 match
-counts, ~30% target density, 90/75 level threshold, 500ms stimulus +
-2500ms response). It does **not** include "lure" trials (N±1 near-matches)
-— those are a Brain Workshop addition, not part of the validated paradigm.
-
-## Contributing
-
-PRs welcome — please open an issue first for non-trivial changes. Keep the
-engine pure (no React) and don't break the storage / audio interfaces.
+1. **Dual N-Back** ✅
+2. Landing site at the root domain
+3. More games (Stroop, mental math, Schulte tables — TBD)
+4. Optional accounts + cross-game progress tracking
+5. Native mobile builds (engine modules are already React-Native-portable by design)
 
 ## License
 
 [MIT](./LICENSE) © 2026 Jonathan Leane
-
-## Acknowledgements
-
-- Visual design inspired by the [N-Back Challenge](https://play.google.com/store/apps/details?id=com.rivuspurus.nbackchallenge) app by Rivuspurus.
-- Reference paradigm: Jaeggi, Buschkuehl, Jonides & Perrig (2008).
-  *Improving fluid intelligence with training on working memory.* PNAS.
-- [Brain Workshop](https://brainworkshop.sourceforge.net/) — the canonical open-source dual n-back implementation.
