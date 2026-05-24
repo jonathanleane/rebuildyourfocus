@@ -1,5 +1,6 @@
 import ProgressRing from '../components/ProgressRing';
 import BigButton from '../components/BigButton';
+import DemoGrid from '../components/DemoGrid';
 import type { UsePlayerState } from '../state/usePlayerState';
 import { CHALLENGE_TARGET } from '../engine/constants';
 
@@ -33,6 +34,8 @@ export default function MenuScreen({ player, onStart, onStats, onSettings }: Pro
       </div>
 
       <ProgressRing value={p.totalSessionsCompleted} max={CHALLENGE_TARGET} label="Sessions" />
+
+      <DemoGrid />
 
       <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <div style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--fg-dim)' }}>
