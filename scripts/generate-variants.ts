@@ -45,6 +45,56 @@ const TARGETS: { letter: string; variants: { id: string; text: string }[] }[] = 
       { id: '07-Aitch-long', text: 'Aitch ...' },
     ],
   },
+  {
+    letter: 'K',
+    variants: [
+      { id: '01-bare', text: 'K' },
+      { id: '02-bare-period', text: 'K.' },
+      { id: '04-Kay', text: 'Kay.' },
+    ],
+  },
+  {
+    letter: 'L',
+    variants: [
+      { id: '01-bare', text: 'L' },
+      { id: '02-bare-period', text: 'L.' },
+      { id: '04-Ell', text: 'Ell.' },
+    ],
+  },
+  {
+    letter: 'Q',
+    variants: [
+      { id: '01-bare', text: 'Q' },
+      { id: '02-bare-period', text: 'Q.' },
+      { id: '04-Cue', text: 'Cue.' },
+      { id: '05-Queue', text: 'Queue.' },
+    ],
+  },
+  {
+    letter: 'R',
+    variants: [
+      { id: '01-bare', text: 'R' },
+      { id: '02-bare-period', text: 'R.' },
+      { id: '04-Are', text: 'Are.' },
+      { id: '05-Arr', text: 'Arr.' },
+    ],
+  },
+  {
+    letter: 'S',
+    variants: [
+      { id: '01-bare', text: 'S' },
+      { id: '02-bare-period', text: 'S.' },
+      { id: '04-Ess', text: 'Ess.' },
+    ],
+  },
+  {
+    letter: 'T',
+    variants: [
+      { id: '01-bare', text: 'T' },
+      { id: '02-bare-period', text: 'T.' },
+      { id: '04-Tee', text: 'Tee.' },
+    ],
+  },
 ];
 
 async function generate(text: string): Promise<Buffer> {
