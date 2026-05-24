@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Layout from './components/Layout';
 import LandingScreen from './screens/LandingScreen';
 import MenuScreen from './screens/MenuScreen';
@@ -29,9 +29,25 @@ interface Session {
   startingLevel: number;
 }
 
+const DUAL_N_BACK_PATH = '/dual-n-back';
+
+function pathForScreen(name: Screen['name']): string {
+  return name === 'landing' ? '/' : DUAL_N_BACK_PATH;
+}
+
+function isDualNBackPath(path: string): boolean {
+  return path === DUAL_N_BACK_PATH || path.startsWith(`${DUAL_N_BACK_PATH}/`);
+}
+
 export default function App() {
   const player = usePlayerState();
-  const [screen, setScreen] = useState<Screen>(() => ({ name: 'landing' }));
+  const [screen, setScreen] = useState<Screen>(() => {
+    if (typeof window !== 'undefined' && isDualNBackPath(window.location.pathname)) {
+      const firstTime = !player.state.player.hasSeenTutorial && player.state.history.length === 0;
+      return firstTime ? { name: 'tutorial' } : { name: 'menu' };
+    }
+    return { name: 'landing' };
+  });
   const [session, setSession] = useState<Session | null>(null);
   // When a session finishes (naturally or early), we stash its SessionResult here
   // so the SessionComplete screen has access to it after the per-block Result.
@@ -142,6 +158,30 @@ export default function App() {
     const firstTime = !player.state.player.hasSeenTutorial && player.state.history.length === 0;
     setScreen(firstTime ? { name: 'tutorial' } : { name: 'menu' });
   }, [player.state.player.hasSeenTutorial, player.state.history.length]);
+
+  // Sync URL ↔ screen. Only two URL-bearing "pages": / (landing) and
+  // /dual-n-back (game, regardless of sub-screen).
+  useEffect(() => {
+    const target = pathForScreen(screen.name);
+    if (window.location.pathname !== target) {
+      window.history.pushState(null, '', target);
+    }
+  }, [screen.name]);
+
+  useEffect(() => {
+    const handler = () => {
+      if (isDualNBackPath(window.location.pathname)) {
+        // Already inside the game flow? leave the current sub-screen alone.
+        setScreen((prev) => (prev.name === 'landing' ? { name: 'menu' } : prev));
+      } else {
+        setSession(null);
+        setPendingSummary(null);
+        setScreen({ name: 'landing' });
+      }
+    };
+    window.addEventListener('popstate', handler);
+    return () => window.removeEventListener('popstate', handler);
+  }, []);
 
   return (
     <Layout>
