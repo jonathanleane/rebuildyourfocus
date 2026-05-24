@@ -73,6 +73,7 @@ export default function GuidedPlay({ voice, onDone, onQuit }: Props) {
           handles.push(narrate('go', voice));
         }, 1400),
       );
+      // 'Go!' shown at 1400ms; first letter at 2900ms — 1.5s breathing room.
       timers.push(
         setTimeout(() => {
           if (cancelled) return;
@@ -81,7 +82,7 @@ export default function GuidedPlay({ voice, onDone, onQuit }: Props) {
             length: TUTORIAL_LENGTH,
             matchesPerModality: TUTORIAL_MATCHES,
           });
-        }, 2100),
+        }, 2900),
       );
     });
 

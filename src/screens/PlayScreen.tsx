@@ -63,10 +63,11 @@ export default function PlayScreen({ player, blockNumber, onBlockComplete, onQui
         setCountdown('go');
         handles.push(narrate('go', settings.voice));
       }, 1400),
+      // 'Go!' shown at 1400ms; first letter at 2900ms — 1.5s breathing room.
       setTimeout(() => {
         setCountdown(null);
         engine.startBlock(settings.nBackLevel);
-      }, 2100),
+      }, 2900),
     ];
     return () => {
       timers.forEach(clearTimeout);
