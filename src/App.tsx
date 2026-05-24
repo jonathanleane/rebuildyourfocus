@@ -3,6 +3,7 @@ import Layout from './components/Layout';
 import MenuScreen from './screens/MenuScreen';
 import PlayScreen from './screens/PlayScreen';
 import ResultScreen from './screens/ResultScreen';
+import SessionCompleteScreen from './screens/SessionCompleteScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import StatsScreen from './screens/StatsScreen';
 import ScienceScreen from './screens/ScienceScreen';
@@ -14,6 +15,7 @@ type Screen =
   | { name: 'menu' }
   | { name: 'play' }
   | { name: 'result'; result: BlockResult; blocksLeft: number; level: number }
+  | { name: 'sessionComplete'; session: SessionResult }
   | { name: 'stats' }
   | { name: 'settings' }
   | { name: 'science' }
@@ -33,6 +35,9 @@ export default function App() {
       : { name: 'menu' },
   );
   const [session, setSession] = useState<Session | null>(null);
+  // When a session finishes (naturally or early), we stash its SessionResult here
+  // so the SessionComplete screen has access to it after the per-block Result.
+  const [pendingSummary, setPendingSummary] = useState<SessionResult | null>(null);
 
   const startSession = useCallback(() => {
     setSession({
@@ -40,6 +45,7 @@ export default function App() {
       startedAt: Date.now(),
       startingLevel: player.state.settings.nBackLevel,
     });
+    setPendingSummary(null);
     setScreen({ name: 'play' });
   }, [player.state.settings.nBackLevel]);
 
@@ -61,6 +67,7 @@ export default function App() {
             completed: true,
           };
           player.recordSession(finished);
+          setPendingSummary(finished);
           setScreen({ name: 'result', result, blocksLeft: 0, level: newLevel });
           return null;
         }
@@ -72,8 +79,17 @@ export default function App() {
     [player],
   );
 
-  const endSession = useCallback(() => {
+  // From ResultScreen's "End session", PlayScreen's "Quit", or the natural end-of-session flow.
+  // Shows SessionComplete if any blocks were played; otherwise jumps to menu.
+  const finishOrSummarize = useCallback(() => {
+    if (pendingSummary) {
+      // Session completed naturally; pendingSummary already exists.
+      setScreen({ name: 'sessionComplete', session: pendingSummary });
+      setSession(null);
+      return;
+    }
     if (session && session.blocks.length > 0) {
+      // Mid-session end — record as incomplete and show summary.
       const partial: SessionResult = {
         id: createId(),
         startedAt: session.startedAt,
@@ -84,10 +100,19 @@ export default function App() {
         completed: false,
       };
       player.recordSession(partial);
+      setPendingSummary(partial);
+      setSession(null);
+      setScreen({ name: 'sessionComplete', session: partial });
+      return;
     }
     setSession(null);
     setScreen({ name: 'menu' });
-  }, [session, player]);
+  }, [pendingSummary, session, player]);
+
+  const dismissSummary = useCallback(() => {
+    setPendingSummary(null);
+    setScreen({ name: 'menu' });
+  }, []);
 
   const continueSession = useCallback(() => setScreen({ name: 'play' }), []);
   const showStats = useCallback(() => setScreen({ name: 'stats' }), []);
@@ -97,15 +122,17 @@ export default function App() {
     player.setTutorialSeen(false);
     setScreen({ name: 'tutorial' });
   }, [player]);
-  const showMenu = useCallback(() => {
-    setSession(null);
-    setScreen({ name: 'menu' });
-  }, []);
 
   const finishTutorial = useCallback(() => {
     player.setTutorialSeen(true);
     setScreen({ name: 'menu' });
   }, [player]);
+
+  const backToMenu = useCallback(() => {
+    setSession(null);
+    setPendingSummary(null);
+    setScreen({ name: 'menu' });
+  }, []);
 
   return (
     <Layout>
@@ -120,7 +147,7 @@ export default function App() {
           player={player}
           blockNumber={session.blocks.length + 1}
           onBlockComplete={recordBlock}
-          onQuit={endSession}
+          onQuit={finishOrSummarize}
         />
       )}
       {screen.name === 'result' && (
@@ -129,15 +156,18 @@ export default function App() {
           blocksLeft={screen.blocksLeft}
           level={screen.level}
           onContinue={continueSession}
-          onDone={endSession}
+          onDone={finishOrSummarize}
         />
       )}
-      {screen.name === 'stats' && <StatsScreen player={player} onBack={showMenu} />}
-      {screen.name === 'science' && <ScienceScreen onBack={showMenu} />}
+      {screen.name === 'sessionComplete' && (
+        <SessionCompleteScreen session={screen.session} onDone={dismissSummary} />
+      )}
+      {screen.name === 'stats' && <StatsScreen player={player} onBack={backToMenu} />}
+      {screen.name === 'science' && <ScienceScreen onBack={backToMenu} />}
       {screen.name === 'settings' && (
         <SettingsScreen
           player={player}
-          onBack={showMenu}
+          onBack={backToMenu}
           onReplayTutorial={showTutorial}
           onShowScience={showScience}
         />

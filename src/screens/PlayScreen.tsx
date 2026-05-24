@@ -113,18 +113,20 @@ export default function PlayScreen({ player, blockNumber, onBlockComplete, onQui
 
   return (
     <>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <button onClick={onQuit} aria-label="Quit session" style={{ color: 'var(--fg-dim)', fontSize: '0.85rem' }}>
           ‹ Quit
         </button>
-        <div style={{ display: 'flex', gap: 12, fontSize: '0.7rem', color: 'var(--fg-dim)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          <span>Block {blockNumber}/{settings.blocksPerSession}</span>
-          <span>{settings.nBackLevel}-back</span>
-          <span>
-            {engine.trialIndex >= 0 ? engine.trialIndex + 1 : 0}/{engine.totalTrials}
-          </span>
+        <div style={{ textAlign: 'center', lineHeight: 1 }}>
+          <div style={{ fontSize: '2.2rem', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--fg)' }}>
+            <span style={{ fontVariantNumeric: 'tabular-nums' }}>{settings.nBackLevel}</span>
+            <span style={{ fontSize: '1.1rem', fontWeight: 500, color: 'var(--fg-dim)', marginLeft: 4 }}>-back</span>
+          </div>
+          <div style={{ fontSize: '0.65rem', color: 'var(--fg-dim)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 4 }}>
+            Block {blockNumber}/{settings.blocksPerSession} · Trial {engine.trialIndex >= 0 ? engine.trialIndex + 1 : 0}/{engine.totalTrials}
+          </div>
         </div>
-        <div style={{ width: 32 }} />
+        <div style={{ width: 48 }} />
       </div>
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative' }}>
