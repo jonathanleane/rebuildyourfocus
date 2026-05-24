@@ -1,0 +1,88 @@
+{
+  "voice": {
+    "slug": "alice",
+    "elevenLabsId": "Xb7hH8MSUJpSbSDYk0k2"
+  },
+  "letters": [
+    {
+      "letter": "C",
+      "variants": [
+        {
+          "id": "01-bare",
+          "text": "C",
+          "url": "/audio/variants/alice/C/01-bare.mp3"
+        },
+        {
+          "id": "02-bare-period",
+          "text": "C.",
+          "url": "/audio/variants/alice/C/02-bare-period.mp3"
+        },
+        {
+          "id": "03-bare-lowercase",
+          "text": "c",
+          "url": "/audio/variants/alice/C/03-bare-lowercase.mp3"
+        },
+        {
+          "id": "04-See",
+          "text": "See.",
+          "url": "/audio/variants/alice/C/04-See.mp3"
+        },
+        {
+          "id": "05-Sea",
+          "text": "Sea.",
+          "url": "/audio/variants/alice/C/05-Sea.mp3"
+        },
+        {
+          "id": "06-the-letter-C",
+          "text": "The letter C.",
+          "url": "/audio/variants/alice/C/06-the-letter-C.mp3"
+        },
+        {
+          "id": "07-See-long",
+          "text": "See ...",
+          "url": "/audio/variants/alice/C/07-See-long.mp3"
+        }
+      ]
+    },
+    {
+      "letter": "H",
+      "variants": [
+        {
+          "id": "01-bare",
+          "text": "H",
+          "url": "/audio/variants/alice/H/01-bare.mp3"
+        },
+        {
+          "id": "02-bare-period",
+          "text": "H.",
+          "url": "/audio/variants/alice/H/02-bare-period.mp3"
+        },
+        {
+          "id": "03-bare-lowercase",
+          "text": "h",
+          "url": "/audio/variants/alice/H/03-bare-lowercase.mp3"
+        },
+        {
+          "id": "04-Aitch",
+          "text": "Aitch.",
+          "url": "/audio/variants/alice/H/04-Aitch.mp3"
+        },
+        {
+          "id": "05-Haitch",
+          "text": "Haitch.",
+          "url": "/audio/variants/alice/H/05-Haitch.mp3"
+        },
+        {
+          "id": "06-the-letter-H",
+          "text": "The letter H.",
+          "url": "/audio/variants/alice/H/06-the-letter-H.mp3"
+        },
+        {
+          "id": "07-Aitch-long",
+          "text": "Aitch ...",
+          "url": "/audio/variants/alice/H/07-Aitch-long.mp3"
+        }
+      ]
+    }
+  ]
+}

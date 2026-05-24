@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Letter audio variants · Alice</title>
+  <style>
+    :root {
+      --bg: #f7f6f3;
+      --fg: #1a1a1a;
+      --fg-dim: #7a7a7a;
+      --surface: rgba(0,0,0,0.04);
+      --surface-deep: rgba(0,0,0,0.07);
+      --border: rgba(0,0,0,0.10);
+      --accent: #1a1a1a;
+      --accent-fg: #f7f6f3;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      -webkit-font-smoothing: antialiased;
+      padding: 32px 20px;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; }
+    h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
+    .sub { color: var(--fg-dim); font-size: 0.9rem; margin-bottom: 32px; }
+    h2 {
+      font-size: 1.1rem; font-weight: 700;
+      margin: 32px 0 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 80px 1fr auto auto;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 12px;
+      background: var(--surface);
+      border-radius: 10px;
+      margin-bottom: 6px;
+    }
+    .row .id { font-size: 0.75rem; color: var(--fg-dim); font-family: ui-monospace, Menlo, monospace; }
+    .row .prompt {
+      font-size: 0.95rem;
+      font-family: ui-monospace, Menlo, monospace;
+      background: var(--bg);
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+    .row .size { font-size: 0.7rem; color: var(--fg-dim); font-variant-numeric: tabular-nums; }
+    button {
+      background: var(--accent);
+      color: var(--accent-fg);
+      border: none;
+      border-radius: 999px;
+      padding: 8px 16px;
+      font: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover { opacity: 0.85; }
+    button.playing { background: #34c759; color: white; }
+    .legend {
+      font-size: 0.8rem;
+      color: var(--fg-dim);
+      margin-top: 24px;
+      padding: 12px;
+      background: var(--surface);
+      border-radius: 10px;
+      line-height: 1.5;
+    }
+    .legend code {
+      background: var(--bg);
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 0.85em;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Letter audio variants</h1>
+    <div class="sub">Voice: <b>Alice</b> (UK female, ElevenLabs premade). Click Play to hear each prompt. Pick a winner per letter and tell Claude the variant id.</div>
+    <div id="content">Loading…</div>
+    <div class="legend">
+      <b>How to use:</b> listen to each variant, then tell Claude something like <code>use C 04-See and H 04-Aitch</code> and they'll be promoted to the main letter audio. Anything that sounds truncated, mispronounced, or unclear is what we're trying to avoid. File size is a rough proxy — variants under ~3 KB are almost certainly clipped.
+    </div>
+  </div>
+
+  <script type="module">
+    const res = await fetch('/audio/variants/alice/manifest.json');
+    const manifest = await res.json();
+    const root = document.getElementById('content');
+    root.innerHTML = '';
+    let currentAudio = null;
+    let currentButton = null;
+    for (const lt of manifest.letters) {
+      const h = document.createElement('h2');
+      h.textContent = `Letter ${lt.letter}`;
+      root.appendChild(h);
+      for (const v of lt.variants) {
+        const row = document.createElement('div');
+        row.className = 'row';
+
+        const id = document.createElement('div');
+        id.className = 'id';
+        id.textContent = v.id;
+        row.appendChild(id);
+
+        const prompt = document.createElement('div');
+        prompt.className = 'prompt';
+        prompt.textContent = JSON.stringify(v.text);
+        row.appendChild(prompt);
+
+        const size = document.createElement('div');
+        size.className = 'size';
+        // We'll fill size after fetching to show file size
+        size.textContent = '…';
+        row.appendChild(size);
+
+        const btn = document.createElement('button');
+        btn.textContent = '▶  Play';
+        btn.addEventListener('click', () => {
+          if (currentAudio) {
+            currentAudio.pause();
+            if (currentButton) currentButton.classList.remove('playing');
+          }
+          const a = new Audio(v.url);
+          currentAudio = a;
+          currentButton = btn;
+          btn.classList.add('playing');
+          btn.textContent = '◼  Stop';
+          a.onended = () => {
+            btn.classList.remove('playing');
+            btn.textContent = '▶  Play';
+            currentAudio = null;
+            currentButton = null;
+          };
+          a.play();
+        });
+        row.appendChild(btn);
+
+        root.appendChild(row);
+
+        // Fetch size (HEAD)
+        fetch(v.url, { method: 'HEAD' }).then((r) => {
+          const len = r.headers.get('content-length');
+          if (len) size.textContent = `${(parseInt(len) / 1024).toFixed(1)} KB`;
+        });
+      }
+    }
+  </script>
+</body>
+</html>
