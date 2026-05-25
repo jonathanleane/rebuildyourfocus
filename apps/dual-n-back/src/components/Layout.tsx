@@ -10,7 +10,7 @@ export default function Layout({ children }: Props) {
       style={{
         maxWidth: 480,
         margin: '0 auto',
-        minHeight: '100vh',
+        minHeight: '100dvh',
         padding: '24px 20px',
         display: 'flex',
         flexDirection: 'column',

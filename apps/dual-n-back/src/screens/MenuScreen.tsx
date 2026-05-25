@@ -1,5 +1,4 @@
 import BigButton from '../components/BigButton';
-import DemoGrid from '../components/DemoGrid';
 import type { UsePlayerState } from '../state/usePlayerState';
 import { CHALLENGE_TARGET } from '../engine/constants';
 
@@ -40,17 +39,7 @@ export default function MenuScreen({ player, onStart, onStats, onSettings, onHom
         </div>
       </header>
 
-      <div
-        style={{
-          flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '12px 0',
-        }}
-      >
-        <DemoGrid />
-      </div>
+      <div style={{ flex: 1 }} />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <BigButton primary onClick={onStart}>Start Session</BigButton>
