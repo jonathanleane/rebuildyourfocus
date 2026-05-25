@@ -9,10 +9,8 @@ export default function DemoGrid() {
         gridTemplateColumns: 'repeat(3, 1fr)',
         gridTemplateRows: 'repeat(3, 1fr)',
         gap: 10,
-        // Cap at 200px square so iPhone SE (568px visible viewport) fits
-        // header + grid + buttons + footer without scroll.
-        width: 'min(50vw, 200px)',
-        height: 'min(50vw, 200px)',
+        width: 'min(80vw, 300px)',
+        height: 'min(80vw, 300px)',
       }}
     >
       {Array.from({ length: GRID_SIZE }, (_, i) => (
