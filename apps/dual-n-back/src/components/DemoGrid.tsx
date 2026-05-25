@@ -20,6 +20,7 @@ export default function DemoGrid() {
           key={i}
           style={{
             background: 'var(--surface)',
+            border: '1px solid var(--border)',
             borderRadius: 12,
           }}
         />
