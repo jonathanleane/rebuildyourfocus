@@ -1,28 +1,45 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import Grid from '../components/Grid';
 import BigButton from '../components/BigButton';
+import Grid from '../components/Grid';
 import { useGameEngine } from '../state/useGameEngine';
 import { createAudioPlayer, type AudioPlayer } from '../audio';
 import { narrate } from '../audio/narrations';
+import { applyOutcome } from '../engine/scoring';
+import { CHALLENGE_TARGET } from '../engine/constants';
 import type { UsePlayerState } from '../state/usePlayerState';
 import type { BlockResult } from '../engine/types';
-import { applyOutcome } from '../engine/scoring';
+
+type Countdown = 'ready' | 'set' | 'go' | null;
 
 interface Props {
   player: UsePlayerState;
+  mode: 'idle' | 'playing';
   blockNumber: number;
+  onStart: () => void;
+  onHome: () => void;
+  onStats: () => void;
+  onSettings: () => void;
   onBlockComplete: (result: BlockResult, newLevel: number) => void;
   onQuit: () => void;
 }
 
-type Countdown = 'ready' | 'set' | 'go' | null;
-
-export default function PlayScreen({ player, blockNumber, onBlockComplete, onQuit }: Props) {
-  const settings = player.state.settings;
+export default function GameScreen({
+  player,
+  mode,
+  blockNumber,
+  onStart,
+  onHome,
+  onStats,
+  onSettings,
+  onBlockComplete,
+  onQuit,
+}: Props) {
+  const { player: p, settings } = player.state;
   const [audio, setAudio] = useState<AudioPlayer | null>(null);
-  const [countdown, setCountdown] = useState<Countdown>('ready');
+  const [countdown, setCountdown] = useState<Countdown>(null);
 
   useEffect(() => {
+    if (mode !== 'playing') return;
     let cancelled = false;
     createAudioPlayer(settings.audioSource, settings.voice).then((p) => {
       if (!cancelled) setAudio(p);
@@ -30,7 +47,7 @@ export default function PlayScreen({ player, blockNumber, onBlockComplete, onQui
     return () => {
       cancelled = true;
     };
-  }, [settings.audioSource, settings.voice]);
+  }, [mode, settings.audioSource, settings.voice]);
 
   const engine = useGameEngine({
     audio,
@@ -50,10 +67,9 @@ export default function PlayScreen({ player, blockNumber, onBlockComplete, onQui
   }, [engine.mode]);
 
   useEffect(() => {
-    if (!audio) return;
-    const handles = [
-      narrate('ready', settings.voice),
-    ];
+    if (mode !== 'playing' || !audio) return;
+    setCountdown('ready');
+    const handles = [narrate('ready', settings.voice)];
     const timers = [
       setTimeout(() => {
         setCountdown('set');
@@ -63,7 +79,6 @@ export default function PlayScreen({ player, blockNumber, onBlockComplete, onQui
         setCountdown('go');
         handles.push(narrate('go', settings.voice));
       }, 1400),
-      // 'Go!' shown at 1400ms; first letter at 2900ms — 1.5s breathing room.
       setTimeout(() => {
         setCountdown(null);
         engine.startBlock(settings.nBackLevel);
@@ -74,11 +89,8 @@ export default function PlayScreen({ player, blockNumber, onBlockComplete, onQui
       handles.forEach((h) => h.cancel());
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [audio]);
+  }, [mode, audio]);
 
-  // Buttons stay visually pressed (locked) once tapped for the current trial.
-  // The reducer is idempotent, so multiple taps don't change anything; we just
-  // also suppress the click handler to make the lock explicit.
   const posLocked = engine.currentResponse?.position === true;
   const sndLocked = engine.currentResponse?.letter === true;
 
@@ -99,6 +111,7 @@ export default function PlayScreen({ player, blockNumber, onBlockComplete, onQui
   }, [engine.pause, engine.resume, isPaused]);
 
   useEffect(() => {
+    if (mode !== 'playing') return;
     const onKey = (e: KeyboardEvent) => {
       if (e.repeat) return;
       if (e.key === 'Escape') {
@@ -117,7 +130,7 @@ export default function PlayScreen({ player, blockNumber, onBlockComplete, onQui
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [tapPos, tapSnd, togglePause, isPaused]);
+  }, [mode, tapPos, tapSnd, togglePause, isPaused]);
 
   const litIndex = useMemo(
     () => (engine.showStimulus && engine.currentTrial ? engine.currentTrial.position : null),
@@ -126,35 +139,69 @@ export default function PlayScreen({ player, blockNumber, onBlockComplete, onQui
 
   return (
     <>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-        <button onClick={onQuit} aria-label="Quit session" style={{ color: 'var(--fg-dim)', fontSize: '0.85rem' }}>
-          ‹ Quit
-        </button>
-        <div style={{ textAlign: 'center', lineHeight: 1 }}>
-          <div style={{ fontSize: '2.2rem', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--fg)' }}>
-            <span style={{ fontVariantNumeric: 'tabular-nums' }}>{settings.nBackLevel}</span>
-            <span style={{ fontSize: '1.1rem', fontWeight: 500, color: 'var(--fg-dim)', marginLeft: 4 }}>-back</span>
+      {mode === 'idle' ? (
+        <>
+          <button
+            onClick={onHome}
+            style={{ color: 'var(--fg-dim)', fontSize: '0.85rem', alignSelf: 'flex-start', marginBottom: 4 }}
+          >
+            ‹ All games
+          </button>
+          <header style={{ marginTop: 4 }}>
+            <div style={{ fontSize: '1.8rem', fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.1 }}>N-Back</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--fg-dim)', marginBottom: 16 }}>Challenge</div>
+            <div
+              style={{
+                display: 'flex',
+                gap: 8,
+                flexWrap: 'wrap',
+                fontSize: '0.72rem',
+                fontWeight: 600,
+                color: 'var(--fg-dim)',
+              }}
+            >
+              <Badge>🔥 {p.currentStreak}d streak</Badge>
+              <Badge>{p.totalSessionsCompleted}/{CHALLENGE_TARGET} sessions</Badge>
+              <Badge accent>{settings.nBackLevel}-back · {settings.blocksPerSession} blocks</Badge>
+            </div>
+          </header>
+        </>
+      ) : (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <button onClick={onQuit} aria-label="Quit session" style={{ color: 'var(--fg-dim)', fontSize: '0.85rem' }}>
+            ‹ Quit
+          </button>
+          <div style={{ textAlign: 'center', lineHeight: 1 }}>
+            <div style={{ fontSize: '2.2rem', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--fg)' }}>
+              <span style={{ fontVariantNumeric: 'tabular-nums' }}>{settings.nBackLevel}</span>
+              <span style={{ fontSize: '1.1rem', fontWeight: 500, color: 'var(--fg-dim)', marginLeft: 4 }}>-back</span>
+            </div>
+            <div style={{ fontSize: '0.65rem', color: 'var(--fg-dim)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 4 }}>
+              Block {blockNumber}/{settings.blocksPerSession} · Trial {engine.trialIndex >= 0 ? engine.trialIndex + 1 : 0}/{engine.totalTrials}
+            </div>
           </div>
-          <div style={{ fontSize: '0.65rem', color: 'var(--fg-dim)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 4 }}>
-            Block {blockNumber}/{settings.blocksPerSession} · Trial {engine.trialIndex >= 0 ? engine.trialIndex + 1 : 0}/{engine.totalTrials}
-          </div>
+          <button
+            onClick={togglePause}
+            aria-label={isPaused ? 'Resume' : 'Pause'}
+            title={isPaused ? 'Resume (Esc)' : 'Pause (Esc)'}
+            style={{ color: 'var(--fg-dim)', fontSize: '0.85rem', width: 48, textAlign: 'right' }}
+          >
+            {isPaused ? 'Resume' : 'Pause'}
+          </button>
         </div>
-        <button
-          onClick={togglePause}
-          aria-label={isPaused ? 'Resume' : 'Pause'}
-          title={isPaused ? 'Resume (Esc)' : 'Pause (Esc)'}
-          style={{
-            color: 'var(--fg-dim)',
-            fontSize: '0.85rem',
-            width: 48,
-            textAlign: 'right',
-          }}
-        >
-          {isPaused ? 'Resume' : 'Pause'}
-        </button>
-      </div>
+      )}
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative' }}>
+      <div
+        style={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+          padding: '16px 0',
+          minHeight: 0,
+        }}
+      >
         <Grid litIndex={litIndex} />
         {countdown && (
           <div
@@ -213,10 +260,50 @@ export default function PlayScreen({ player, blockNumber, onBlockComplete, onQui
         )}
       </div>
 
-      <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
-        <BigButton onClick={tapPos} pressed={posLocked} ariaLabel="Position match" hotkey="A">Position</BigButton>
-        <BigButton primary onClick={tapSnd} pressed={sndLocked} ariaLabel="Sound match" hotkey="L">Sound</BigButton>
-      </div>
+      {mode === 'idle' ? (
+        <>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <BigButton primary onClick={onStart}>Start Session</BigButton>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <BigButton onClick={onStats}>Stats</BigButton>
+              <BigButton onClick={onSettings}>Settings</BigButton>
+            </div>
+          </div>
+          <div style={{ marginTop: 16, textAlign: 'center', fontSize: '0.72rem', color: 'var(--fg-dim)' }}>
+            Free &amp; open source ·{' '}
+            <a
+              href="https://github.com/jonathanleane/rebuildyourfocus/tree/main/apps/dual-n-back"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: 'var(--accent)' }}
+            >
+              source on GitHub
+            </a>
+          </div>
+        </>
+      ) : (
+        <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+          <BigButton onClick={tapPos} pressed={posLocked} ariaLabel="Position match" hotkey="A">Position</BigButton>
+          <BigButton primary onClick={tapSnd} pressed={sndLocked} ariaLabel="Sound match" hotkey="L">Sound</BigButton>
+        </div>
+      )}
     </>
+  );
+}
+
+function Badge({ children, accent }: { children: React.ReactNode; accent?: boolean }) {
+  return (
+    <span
+      style={{
+        background: accent ? 'var(--fg)' : 'var(--surface)',
+        color: accent ? 'var(--bg)' : 'var(--fg)',
+        border: '1px solid var(--border)',
+        borderRadius: 999,
+        padding: '5px 10px',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {children}
+    </span>
   );
 }

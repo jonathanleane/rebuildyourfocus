@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Layout from './components/Layout';
 import LandingScreen from './screens/LandingScreen';
-import MenuScreen from './screens/MenuScreen';
-import PlayScreen from './screens/PlayScreen';
+import GameScreen from './screens/GameScreen';
 import ResultScreen from './screens/ResultScreen';
 import SessionCompleteScreen from './screens/SessionCompleteScreen';
 import SettingsScreen from './screens/SettingsScreen';
@@ -14,8 +13,8 @@ import type { BlockResult, SessionResult } from './engine/types';
 
 type Screen =
   | { name: 'landing' }
-  | { name: 'menu' }
-  | { name: 'play' }
+  | { name: 'gameIdle' }
+  | { name: 'gamePlaying' }
   | { name: 'result'; result: BlockResult; blocksLeft: number; level: number }
   | { name: 'sessionComplete'; session: SessionResult }
   | { name: 'stats' }
@@ -44,7 +43,7 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>(() => {
     if (typeof window !== 'undefined' && isDualNBackPath(window.location.pathname)) {
       const firstTime = !player.state.player.hasSeenTutorial && player.state.history.length === 0;
-      return firstTime ? { name: 'tutorial' } : { name: 'menu' };
+      return firstTime ? { name: 'tutorial' } : { name: 'gameIdle' };
     }
     return { name: 'landing' };
   });
@@ -60,7 +59,7 @@ export default function App() {
       startingLevel: player.state.settings.nBackLevel,
     });
     setPendingSummary(null);
-    setScreen({ name: 'play' });
+    setScreen({ name: 'gamePlaying' });
   }, [player.state.settings.nBackLevel]);
 
   const recordBlock = useCallback(
@@ -120,15 +119,15 @@ export default function App() {
       return;
     }
     setSession(null);
-    setScreen({ name: 'menu' });
+    setScreen({ name: 'gameIdle' });
   }, [pendingSummary, session, player]);
 
   const dismissSummary = useCallback(() => {
     setPendingSummary(null);
-    setScreen({ name: 'menu' });
+    setScreen({ name: 'gameIdle' });
   }, []);
 
-  const continueSession = useCallback(() => setScreen({ name: 'play' }), []);
+  const continueSession = useCallback(() => setScreen({ name: 'gamePlaying' }), []);
   const showStats = useCallback(() => setScreen({ name: 'stats' }), []);
   const showSettings = useCallback(() => setScreen({ name: 'settings' }), []);
   const showScience = useCallback(() => setScreen({ name: 'science' }), []);
@@ -139,13 +138,13 @@ export default function App() {
 
   const finishTutorial = useCallback(() => {
     player.setTutorialSeen(true);
-    setScreen({ name: 'menu' });
+    setScreen({ name: 'gameIdle' });
   }, [player]);
 
-  const backToMenu = useCallback(() => {
+  const backToGameIdle = useCallback(() => {
     setSession(null);
     setPendingSummary(null);
-    setScreen({ name: 'menu' });
+    setScreen({ name: 'gameIdle' });
   }, []);
 
   const backToLanding = useCallback(() => {
@@ -156,7 +155,7 @@ export default function App() {
 
   const enterDualNBack = useCallback(() => {
     const firstTime = !player.state.player.hasSeenTutorial && player.state.history.length === 0;
-    setScreen(firstTime ? { name: 'tutorial' } : { name: 'menu' });
+    setScreen(firstTime ? { name: 'tutorial' } : { name: 'gameIdle' });
   }, [player.state.player.hasSeenTutorial, player.state.history.length]);
 
   // Sync URL ↔ screen. Only two URL-bearing "pages": / (landing) and
@@ -172,7 +171,7 @@ export default function App() {
     const handler = () => {
       if (isDualNBackPath(window.location.pathname)) {
         // Already inside the game flow? leave the current sub-screen alone.
-        setScreen((prev) => (prev.name === 'landing' ? { name: 'menu' } : prev));
+        setScreen((prev) => (prev.name === 'landing' ? { name: 'gameIdle' } : prev));
       } else {
         setSession(null);
         setPendingSummary(null);
@@ -191,13 +190,15 @@ export default function App() {
       {screen.name === 'tutorial' && (
         <TutorialScreen onFinish={finishTutorial} />
       )}
-      {screen.name === 'menu' && (
-        <MenuScreen player={player} onStart={startSession} onStats={showStats} onSettings={showSettings} onHome={backToLanding} />
-      )}
-      {screen.name === 'play' && session && (
-        <PlayScreen
+      {(screen.name === 'gameIdle' || screen.name === 'gamePlaying') && (
+        <GameScreen
           player={player}
-          blockNumber={session.blocks.length + 1}
+          mode={screen.name === 'gamePlaying' ? 'playing' : 'idle'}
+          blockNumber={session ? session.blocks.length + 1 : 1}
+          onStart={startSession}
+          onHome={backToLanding}
+          onStats={showStats}
+          onSettings={showSettings}
           onBlockComplete={recordBlock}
           onQuit={finishOrSummarize}
         />
@@ -214,12 +215,12 @@ export default function App() {
       {screen.name === 'sessionComplete' && (
         <SessionCompleteScreen session={screen.session} onDone={dismissSummary} />
       )}
-      {screen.name === 'stats' && <StatsScreen player={player} onBack={backToMenu} />}
-      {screen.name === 'science' && <ScienceScreen onBack={backToMenu} />}
+      {screen.name === 'stats' && <StatsScreen player={player} onBack={backToGameIdle} />}
+      {screen.name === 'science' && <ScienceScreen onBack={backToGameIdle} />}
       {screen.name === 'settings' && (
         <SettingsScreen
           player={player}
-          onBack={backToMenu}
+          onBack={backToGameIdle}
           onReplayTutorial={showTutorial}
           onShowScience={showScience}
         />
