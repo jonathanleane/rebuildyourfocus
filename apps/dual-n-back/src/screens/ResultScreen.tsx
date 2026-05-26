@@ -97,22 +97,39 @@ export default function ResultScreen({ result, blocksLeft, level, onContinue, on
         </div>
       )}
 
-      <div
-        style={{
+      {(() => {
+        const label =
+          result.outcome === 'level-up'
+            ? `Level raised to ${level}`
+            : result.outcome === 'level-down'
+            ? `Level dropped to ${level}`
+            : `Same level (${level})`;
+        const sharedStyle = {
+          width: '100%',
           background: 'var(--accent)',
           color: 'var(--accent-fg)',
+          border: 'none',
           borderRadius: 14,
           padding: 16,
-          textAlign: 'center',
+          textAlign: 'center' as const,
           marginTop: 16,
-        }}
-      >
-        <div style={{ fontWeight: 700 }}>
-          {result.outcome === 'level-up' && `Level raised to ${level}`}
-          {result.outcome === 'level-down' && `Level dropped to ${level}`}
-          {result.outcome === 'hold' && `Same level (${level})`}
-        </div>
-      </div>
+          fontWeight: 700,
+          fontSize: '1rem',
+        };
+        if (sessionDone) {
+          return <div style={sharedStyle}>{label}</div>;
+        }
+        return (
+          <button
+            type="button"
+            onClick={onContinue}
+            aria-label={`${label}. Continue to next block.`}
+            style={{ ...sharedStyle, cursor: 'pointer' }}
+          >
+            {label}
+          </button>
+        );
+      })()}
 
       <div style={{ marginTop: 'auto', display: 'flex', gap: 12, paddingTop: 24 }}>
         {!sessionDone && <BigButton primary onClick={onContinue}>Continue</BigButton>}
