@@ -212,7 +212,7 @@ export default function GameScreen({
         }}
       >
         <Grid litIndex={litIndex} />
-        {countdown && (
+        {mode === 'playing' && countdown && (
           <div
             aria-live="polite"
             style={{
@@ -232,7 +232,7 @@ export default function GameScreen({
             {countdown === 'ready' ? 'Ready' : countdown === 'set' ? 'Set' : 'Go'}
           </div>
         )}
-        {isPaused && (
+        {mode === 'playing' && isPaused && (
           <div
             role="status"
             aria-live="polite"
