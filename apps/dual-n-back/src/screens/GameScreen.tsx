@@ -105,10 +105,15 @@ export default function GameScreen({
   }, [engine.tapSound, sndLocked]);
 
   const isPaused = engine.mode === 'paused';
+  // Pause is only meaningful while the engine is actually scheduling trials.
+  // During the Ready/Set/Go countdown the engine is still 'idle', so engine.pause()
+  // is a no-op and the countdown's setTimeout would start the block anyway.
+  const canPause = engine.mode !== 'idle' && engine.mode !== 'blockDone';
   const togglePause = useCallback(() => {
+    if (!canPause) return;
     if (isPaused) engine.resume();
     else engine.pause();
-  }, [engine.pause, engine.resume, isPaused]);
+  }, [engine.pause, engine.resume, isPaused, canPause]);
 
   useEffect(() => {
     if (mode !== 'playing') return;
@@ -180,14 +185,18 @@ export default function GameScreen({
               Block {blockNumber}/{settings.blocksPerSession} · Trial {engine.trialIndex >= 0 ? engine.trialIndex + 1 : 0}/{engine.totalTrials}
             </div>
           </div>
-          <button
-            onClick={togglePause}
-            aria-label={isPaused ? 'Resume' : 'Pause'}
-            title={isPaused ? 'Resume (Esc)' : 'Pause (Esc)'}
-            style={{ color: 'var(--fg-dim)', fontSize: '0.85rem', width: 48, textAlign: 'right' }}
-          >
-            {isPaused ? 'Resume' : 'Pause'}
-          </button>
+          {canPause ? (
+            <button
+              onClick={togglePause}
+              aria-label={isPaused ? 'Resume' : 'Pause'}
+              title={isPaused ? 'Resume (Esc)' : 'Pause (Esc)'}
+              style={{ color: 'var(--fg-dim)', fontSize: '0.85rem', width: 48, textAlign: 'right' }}
+            >
+              {isPaused ? 'Resume' : 'Pause'}
+            </button>
+          ) : (
+            <div style={{ width: 48 }} aria-hidden="true" />
+          )}
         </div>
       )}
 
