@@ -11,7 +11,7 @@ export function createDefaultState(): PersistedState {
       nBackLevel: 2,
       blocksPerSession: DEFAULT_BLOCKS_PER_SESSION,
       speedMultiplier: DEFAULT_SPEED,
-      instantFeedback: true,
+      instantFeedback: false,
       autoLevelProgression: true,
       audioSource: 'auto',
       voice: 'alice',

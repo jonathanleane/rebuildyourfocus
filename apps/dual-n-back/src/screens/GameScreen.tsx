@@ -94,6 +94,14 @@ export default function GameScreen({
   const posLocked = engine.currentResponse?.position === true;
   const sndLocked = engine.currentResponse?.letter === true;
 
+  const showFeedback = settings.instantFeedback && engine.currentTrial !== null;
+  const posFeedback = showFeedback && posLocked
+    ? (engine.currentTrial!.positionMatch ? 'correct' : 'wrong')
+    : undefined;
+  const sndFeedback = showFeedback && sndLocked
+    ? (engine.currentTrial!.letterMatch ? 'correct' : 'wrong')
+    : undefined;
+
   const tapPos = useCallback(() => {
     if (posLocked) return;
     engine.tapPosition();
@@ -292,8 +300,8 @@ export default function GameScreen({
         </>
       ) : (
         <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
-          <BigButton onClick={tapPos} pressed={posLocked} ariaLabel="Position match" hotkey="A">Position</BigButton>
-          <BigButton primary onClick={tapSnd} pressed={sndLocked} ariaLabel="Sound match" hotkey="L">Sound</BigButton>
+          <BigButton onClick={tapPos} pressed={posLocked} feedback={posFeedback} ariaLabel="Position match" hotkey="A">Position</BigButton>
+          <BigButton primary onClick={tapSnd} pressed={sndLocked} feedback={sndFeedback} ariaLabel="Sound match" hotkey="L">Sound</BigButton>
         </div>
       )}
     </>
