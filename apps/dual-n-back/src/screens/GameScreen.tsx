@@ -175,7 +175,9 @@ export default function GameScreen({
             >
               <Badge>🔥 {p.currentStreak}d streak</Badge>
               <Badge>{p.totalSessionsCompleted}/{CHALLENGE_TARGET} sessions</Badge>
-              <Badge accent>{settings.nBackLevel}-back · {settings.blocksPerSession} blocks</Badge>
+              <Badge accent onClick={onSettings} ariaLabel="Edit level and session length in Settings">
+                {settings.nBackLevel}-back · {settings.blocksPerSession} blocks
+              </Badge>
             </div>
           </header>
         </>
@@ -308,19 +310,34 @@ export default function GameScreen({
   );
 }
 
-function Badge({ children, accent }: { children: React.ReactNode; accent?: boolean }) {
-  return (
-    <span
-      style={{
-        background: accent ? 'var(--fg)' : 'var(--surface)',
-        color: accent ? 'var(--bg)' : 'var(--fg)',
-        border: '1px solid var(--border)',
-        borderRadius: 999,
-        padding: '5px 10px',
-        whiteSpace: 'nowrap',
-      }}
-    >
-      {children}
-    </span>
-  );
+function Badge({
+  children,
+  accent,
+  onClick,
+  ariaLabel,
+}: {
+  children: React.ReactNode;
+  accent?: boolean;
+  onClick?: () => void;
+  ariaLabel?: string;
+}) {
+  const style = {
+    background: accent ? 'var(--fg)' : 'var(--surface)',
+    color: accent ? 'var(--bg)' : 'var(--fg)',
+    border: '1px solid var(--border)',
+    borderRadius: 999,
+    padding: '5px 10px',
+    whiteSpace: 'nowrap' as const,
+    fontSize: 'inherit',
+    fontWeight: 'inherit',
+    fontFamily: 'inherit',
+  };
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} aria-label={ariaLabel} style={{ ...style, cursor: 'pointer' }}>
+        {children}
+      </button>
+    );
+  }
+  return <span style={style}>{children}</span>;
 }
